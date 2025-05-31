@@ -1,0 +1,150 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+
+{% block title %}{% if order %}Edit{% else %}Create{% endif %} Order - Clothing Store CRM{% endblock %}
+
+{% block extra_css %}
+<style>
+    .formset-row {
+        margin-bottom: 1rem;
+        padding: 1rem;
+        border-radius: 0.35rem;
+        background-color: #f8f9fc;
+    }
+    
+    .add-item-btn {
+        margin-top: 1rem;
+    }
+    
+    .delete-row {
+        cursor: pointer;
+        color: var(--danger-color);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+<!--    &lt;!&#45;&#45; Page Heading &ndash;&gt;-->
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-gray-800">{% if order %}Edit{% else %}Create New{% endif %} Order</h1>
+        <a href="{% if order %}{% url 'dashboard:order_detail' order.id %}{% else %}{% url 'dashboard:order_list' %}{% endif %}" class="d-none d-sm-inline-block btn btn-sm btn-secondary shadow-sm">
+            <i class="fas fa-arrow-left fa-sm text-white-50"></i> Back
+        </a>
+    </div>
+
+    <div class="card shadow mb-4">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">Order Information</h6>
+        </div>
+        <div class="card-body">
+            <form method="POST">
+                {% csrf_token %}
+                <div class="row mb-4">
+                    <div class="col-md-6">
+                        {{ form.customer|as_crispy_field }}
+                    </div>
+                    <div class="col-md-6">
+                        {{ form.status|as_crispy_field }}
+                    </div>
+                </div>
+                
+                <h5 class="mb-3">Order Items</h5>
+                {{ formset.management_form }}
+                
+                <div id="formset-container">
+                    {% for form in formset %}
+                    <div class="formset-row">
+                        <div class="row">
+                            <div class="col-md-6">
+                                {{ form.product|as_crispy_field }}
+                            </div>
+                            <div class="col-md-5">
+                                {{ form.quantity|as_crispy_field }}
+                            </div>
+                            <div class="col-md-1 d-flex align-items-center">
+                                {% if forloop.counter > 1 %}
+                                <i class="fas fa-times delete-row"></i>
+                                {% endif %}
+                            </div>
+                        </div>
+                        {% for hidden in form.hidden_fields %}
+                            {{ hidden }}
+                        {% endfor %}
+                    </div>
+                    {% endfor %}
+                </div>
+                
+                <button type="button" id="add-item" class="btn btn-info add-item-btn">
+                    <i class="fas fa-plus"></i> Add Another Item
+                </button>
+                
+                <div class="mt-4">
+                    <button type="submit" class="btn btn-primary">
+                        {% if order %}Update{% else %}Create{% endif %} Order
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const container = document.querySelector('#formset-container');
+        const addButton = document.querySelector('#add-item');
+        const totalForms = document.querySelector('#id_items-TOTAL_FORMS');
+        
+        // Add new form
+        addButton.addEventListener('click', function() {
+            const formCount = container.children.length;
+            const newForm = container.children[0].cloneNode(true);
+            
+            // Update form index
+            newForm.innerHTML = newForm.innerHTML.replace(/items-0/g, `items-${formCount}`);
+            newForm.innerHTML = newForm.innerHTML.replace(/items-0-/g, `items-${formCount}-`);
+            
+            // Clear input values
+            newForm.querySelectorAll('input[type="text"], input[type="number"], select').forEach(input => {
+                input.value = '';
+            });
+            
+            // Add delete button if not present
+            if (!newForm.querySelector('.delete-row')) {
+                const lastCol = newForm.querySelector('.row > div:last-child');
+                lastCol.innerHTML = '<i class="fas fa-times delete-row"></i>';
+            }
+            
+            container.appendChild(newForm);
+            totalForms.value = container.children.length;
+            
+            // Add event listener to the new delete button
+            addDeleteListeners();
+        });
+        
+        // Delete form
+        function addDeleteListeners() {
+            document.querySelectorAll('.delete-row').forEach(button => {
+                button.addEventListener('click', function() {
+                    const row = this.closest('.formset-row');
+                    row.remove();
+                    
+                    // Update total forms count
+                    totalForms.value = container.children.length;
+                    
+                    // Renumber forms
+                    container.querySelectorAll('.formset-row').forEach((form, index) => {
+                        form.innerHTML = form.innerHTML.replace(/items-\d+/g, `items-${index}`);
+                        form.innerHTML = form.innerHTML.replace(/items-\d+-/g, `items-${index}-`);
+                    });
+                });
+            });
+        }
+        
+        // Initialize delete listeners
+        addDeleteListeners();
+    });
+</script>
+{% endblock %}

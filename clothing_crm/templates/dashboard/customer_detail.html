@@ -1,0 +1,592 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ customer.name }} - Clothing Store CRM{% endblock %}
+
+{% block extra_css %}
+<style>
+    .customer-hero {
+        background: var(--dark-surface);
+        border: 1px solid var(--dark-border);
+        border-radius: 20px;
+        padding: 2rem;
+        margin-bottom: 2rem;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .customer-hero::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: var(--gradient-success);
+    }
+
+    .customer-avatar-large {
+        width: 120px;
+        height: 120px;
+        border-radius: 50%;
+        background: var(--gradient-success);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 3rem;
+        font-weight: 700;
+        margin: 0 auto 1.5rem;
+        position: relative;
+        transition: all 0.3s ease;
+        box-shadow: 0 0 30px rgba(16, 185, 129, 0.3);
+    }
+
+    .customer-avatar-large:hover {
+        transform: scale(1.05);
+        box-shadow: 0 0 50px rgba(16, 185, 129, 0.5);
+    }
+
+    .customer-name {
+        font-size: 2.5rem;
+        font-weight: 700;
+        color: var(--text-primary);
+        text-align: center;
+        margin-bottom: 0.5rem;
+        background: var(--gradient-success);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+
+    .customer-email {
+        text-align: center;
+        color: var(--text-secondary);
+        font-size: 1.1rem;
+        margin-bottom: 2rem;
+    }
+
+    .info-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 1.5rem;
+        margin-bottom: 2rem;
+    }
+
+    .info-card {
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid var(--dark-border);
+        border-radius: 16px;
+        padding: 1.5rem;
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .info-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: var(--gradient-success);
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    }
+
+    .info-card:hover {
+        transform: translateY(-6px);
+        box-shadow: var(--shadow-xl);
+    }
+
+    .info-card:hover::before {
+        opacity: 0.1;
+    }
+
+    .info-icon {
+        font-size: 2rem;
+        background: var(--gradient-success);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        margin-bottom: 1rem;
+        position: relative;
+        z-index: 2;
+    }
+
+    .info-label {
+        color: var(--text-muted);
+        font-size: 0.875rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-bottom: 0.5rem;
+        position: relative;
+        z-index: 2;
+    }
+
+    .info-value {
+        color: var(--text-primary);
+        font-size: 1.1rem;
+        font-weight: 600;
+        position: relative;
+        z-index: 2;
+    }
+
+    .orders-section {
+        background: var(--dark-surface);
+        border: 1px solid var(--dark-border);
+        border-radius: 16px;
+        overflow: hidden;
+    }
+
+    .orders-header {
+        background: rgba(255, 255, 255, 0.05);
+        padding: 1.5rem;
+        border-bottom: 1px solid var(--dark-border);
+    }
+
+    .order-item {
+        padding: 1.5rem;
+        border-bottom: 1px solid var(--dark-border);
+        transition: all 0.3s ease;
+        position: relative;
+    }
+
+    .order-item:last-child {
+        border-bottom: none;
+    }
+
+    .order-item:hover {
+        background: rgba(255, 255, 255, 0.05);
+        transform: translateX(8px);
+    }
+
+    .order-id {
+        font-weight: 700;
+        color: var(--primary-color);
+        text-decoration: none;
+        font-size: 1.1rem;
+        transition: color 0.3s ease;
+    }
+
+    .order-id:hover {
+        color: var(--primary-dark);
+    }
+
+    .order-meta {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-top: 0.5rem;
+    }
+
+    .order-date {
+        color: var(--text-muted);
+        font-size: 0.875rem;
+    }
+
+    .order-total {
+        font-weight: 600;
+        color: var(--text-primary);
+        font-size: 1.1rem;
+    }
+
+    .status-badge {
+        padding: 0.25rem 0.75rem;
+        border-radius: 20px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .customer-stats {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1.5rem;
+        margin-bottom: 2rem;
+    }
+
+    .stat-card {
+        background: var(--dark-surface);
+        border: 1px solid var(--dark-border);
+        border-radius: 16px;
+        padding: 2rem;
+        text-align: center;
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .stat-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: var(--gradient-success);
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    }
+
+    .stat-card:hover {
+        transform: translateY(-8px);
+        box-shadow: var(--shadow-xl);
+    }
+
+    .stat-card:hover::before {
+        opacity: 0.1;
+    }
+
+    .stat-icon {
+        font-size: 2.5rem;
+        background: var(--gradient-success);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        margin-bottom: 1rem;
+        position: relative;
+        z-index: 2;
+    }
+
+    .stat-number {
+        font-size: 2rem;
+        font-weight: 700;
+        color: var(--text-primary);
+        margin-bottom: 0.5rem;
+        position: relative;
+        z-index: 2;
+    }
+
+    .stat-label {
+        color: var(--text-secondary);
+        font-size: 0.875rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        position: relative;
+        z-index: 2;
+    }
+
+    .action-buttons {
+        display: flex;
+        gap: 1rem;
+        justify-content: center;
+        margin-top: 2rem;
+        flex-wrap: wrap;
+    }
+
+    .action-btn {
+        padding: 1rem 2rem;
+        border-radius: 12px;
+        font-weight: 600;
+        text-decoration: none;
+        transition: all 0.3s ease;
+        border: none;
+        cursor: pointer;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .action-btn::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+        transition: left 0.5s ease;
+    }
+
+    .action-btn:hover::before {
+        left: 100%;
+    }
+
+    .btn-edit {
+        background: var(--gradient-primary);
+        color: white;
+    }
+
+    .btn-delete {
+        background: var(--gradient-secondary);
+        color: white;
+    }
+
+    .btn-back {
+        background: rgba(255, 255, 255, 0.1);
+        color: var(--text-secondary);
+        border: 1px solid var(--dark-border);
+    }
+
+    .action-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+    }
+
+    .timeline {
+        position: relative;
+        padding-left: 2rem;
+    }
+
+    .timeline::before {
+        content: '';
+        position: absolute;
+        left: 0.5rem;
+        top: 0;
+        bottom: 0;
+        width: 2px;
+        background: var(--gradient-success);
+    }
+
+    .timeline-item {
+        position: relative;
+        margin-bottom: 2rem;
+        background: rgba(255, 255, 255, 0.05);
+        border-radius: 12px;
+        padding: 1rem;
+        margin-left: 1rem;
+    }
+
+    .timeline-item::before {
+        content: '';
+        position: absolute;
+        left: -2rem;
+        top: 1rem;
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        background: var(--gradient-success);
+    }
+
+    @media (max-width: 768px) {
+        .customer-name {
+            font-size: 2rem;
+        }
+
+        .action-buttons {
+            flex-direction: column;
+        }
+
+        .order-meta {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 0.5rem;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Customer Hero Section -->
+    <div class="customer-hero">
+        <div class="row">
+            <div class="col-lg-4 text-center">
+                <div class="customer-avatar-large">
+                    {{ customer.name|first|upper }}
+                </div>
+            </div>
+            <div class="col-lg-8">
+                <h1 class="customer-name">{{ customer.name }}</h1>
+                <p class="customer-email">
+                    <i class="fas fa-envelope me-2"></i>{{ customer.email }}
+                </p>
+
+                <div class="action-buttons">
+                    <a href="{% url 'dashboard:customer_update' customer.id %}" class="action-btn btn-edit">
+                        <i class="fas fa-edit me-2"></i>Edit Customer
+                    </a>
+                    <a href="{% url 'dashboard:customer_delete' customer.id %}" class="action-btn btn-delete">
+                        <i class="fas fa-trash me-2"></i>Delete Customer
+                    </a>
+                    <a href="{% url 'dashboard:customer_list' %}" class="action-btn btn-back">
+                        <i class="fas fa-arrow-left me-2"></i>Back to List
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Customer Statistics -->
+    <div class="customer-stats">
+        <div class="stat-card">
+            <i class="fas fa-shopping-cart stat-icon"></i>
+            <div class="stat-number">{{ customer.order_set.count }}</div>
+            <div class="stat-label">Total Orders</div>
+        </div>
+        <div class="stat-card">
+            <i class="fas fa-dollar-sign stat-icon"></i>
+            <div class="stat-number">${{ customer.total_spent|default:"0"|floatformat:2 }}</div>
+            <div class="stat-label">Total Spent</div>
+        </div>
+        <div class="stat-card">
+            <i class="fas fa-calendar-alt stat-icon"></i>
+            <div class="stat-number">{{ customer.date_created|timesince|truncatewords:1 }}</div>
+            <div class="stat-label">Member Since</div>
+        </div>
+        <div class="stat-card">
+            <i class="fas fa-star stat-icon"></i>
+            <div class="stat-number">4.8</div>
+            <div class="stat-label">Rating</div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Customer Information -->
+        <div class="col-lg-4">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">
+                        <i class="fas fa-user me-2"></i>Customer Information
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="info-grid">
+                        <div class="info-card">
+                            <i class="fas fa-phone info-icon"></i>
+                            <div class="info-label">Phone Number</div>
+                            <div class="info-value">{{ customer.phone|default:"Not provided" }}</div>
+                        </div>
+                        <div class="info-card">
+                            <i class="fas fa-map-marker-alt info-icon"></i>
+                            <div class="info-label">Address</div>
+                            <div class="info-value">{{ customer.address|default:"Not provided" }}</div>
+                        </div>
+                        <div class="info-card">
+                            <i class="fas fa-calendar-plus info-icon"></i>
+                            <div class="info-label">Joined Date</div>
+                            <div class="info-value">{{ customer.created_at|date:"M d, Y" }}</div>
+                        </div>
+                        <div class="info-card">
+                            <i class="fas fa-shopping-bag info-icon"></i>
+                            <div class="info-label">Last Order</div>
+                            <div class="info-value">{{ customer.last_order_date|default:"Never"|date:"M d, Y" }}</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Order History -->
+        <div class="col-lg-8">
+            <div class="orders-section">
+                <div class="orders-header">
+                    <h6 class="m-0 font-weight-bold text-primary">
+                        <i class="fas fa-history me-2"></i>Order History
+                    </h6>
+                </div>
+                <div class="orders-body">
+                    {% for order in orders %}
+                    <div class="order-item">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div>
+                                <a href="{% url 'dashboard:order_detail' order.id %}" class="order-id">
+                                    Order #{{ order.id }}
+                                </a>
+                                <div class="order-meta">
+                                    <span class="order-date">{{ order.date_ordered|date:"M d, Y H:i" }}</span>
+                                    <span class="order-total">${{ order.get_cart_total|floatformat:2 }}</span>
+                                </div>
+                            </div>
+                            <span class="status-badge {% if order.status == 'new' %}bg-info{% elif order.status == 'pending' %}bg-warning{% elif order.status == 'paid' %}bg-success{% elif order.status == 'delivered' %}bg-primary{% else %}bg-danger{% endif %}">
+                                {{ order.status|title }}
+                            </span>
+                        </div>
+                        <div class="mt-2">
+                            <small style="color: var(--text-muted);">
+                                {{ order.get_cart_items }} item{{ order.get_cart_items|pluralize }}
+                            </small>
+                        </div>
+                    </div>
+                    {% empty %}
+                    <div class="order-item text-center py-4">
+                        <i class="fas fa-shopping-cart fa-3x mb-3" style="color: var(--text-muted);"></i>
+                        <p style="color: var(--text-secondary);">No orders found</p>
+                        <p style="color: var(--text-muted); font-size: 0.875rem;">This customer hasn't placed any orders yet</p>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Customer Timeline -->
+    <div class="card shadow mt-4">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">
+                <i class="fas fa-timeline me-2"></i>Customer Timeline
+            </h6>
+        </div>
+        <div class="card-body">
+            <div class="timeline">
+                <div class="timeline-item">
+                    <h6 style="color: var(--text-primary);">Customer Registered</h6>
+                    <p style="color: var(--text-secondary);">{{ customer.created_at|date:"F d, Y" }}</p>
+                </div>
+                {% for order in orders|slice:":3" %}
+                <div class="timeline-item">
+                    <h6 style="color: var(--text-primary);">Order #{{ order.id }} Placed</h6>
+                    <p style="color: var(--text-secondary);">{{ order.date_ordered|date:"F d, Y" }} - ${{ order.get_cart_total|floatformat:2 }}</p>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Page load animations
+    document.addEventListener('DOMContentLoaded', function() {
+        const elements = document.querySelectorAll('.stat-card, .info-card, .order-item, .timeline-item');
+        elements.forEach((element, index) => {
+            element.style.opacity = '0';
+            element.style.transform = 'translateY(20px)';
+            element.style.animation = `fadeInUp 0.6s ease forwards ${index * 0.1}s`;
+        });
+    });
+
+    // Avatar hover effect
+    const avatar = document.querySelector('.customer-avatar-large');
+    if (avatar) {
+        avatar.addEventListener('mouseenter', function() {
+            this.style.transform = 'scale(1.1) rotate(5deg)';
+        });
+
+        avatar.addEventListener('mouseleave', function() {
+            this.style.transform = 'scale(1) rotate(0deg)';
+        });
+    }
+
+    // Order item click effect
+    document.querySelectorAll('.order-item').forEach(item => {
+        item.addEventListener('click', function() {
+            const orderLink = this.querySelector('.order-id');
+            if (orderLink) {
+                window.location.href = orderLink.href;
+            }
+        });
+    });
+
+    // Stat card counter animation
+    document.querySelectorAll('.stat-number').forEach(stat => {
+        const finalValue = parseInt(stat.textContent.replace(/[^0-9]/g, ''));
+        if (!isNaN(finalValue)) {
+            let currentValue = 0;
+            const increment = finalValue / 50;
+            const timer = setInterval(() => {
+                currentValue += increment;
+                if (currentValue >= finalValue) {
+                    currentValue = finalValue;
+                    clearInterval(timer);
+                }
+                stat.textContent = stat.textContent.includes('$') ?
+                    `$${Math.floor(currentValue).toFixed(2)}` :
+                    Math.floor(currentValue);
+            }, 30);
+        }
+    });
+</script>
+{% endblock %}

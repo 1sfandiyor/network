@@ -1,0 +1,592 @@
+{% extends 'base.html' %}
+
+{% block title %}Orders - Clothing Store CRM{% endblock %}
+
+{% block extra_css %}
+<style>
+    .order-card {
+        background: var(--dark-surface);
+        border: 1px solid var(--dark-border);
+        border-radius: 16px;
+        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        position: relative;
+        overflow: hidden;
+        margin-bottom: 1.5rem;
+    }
+
+    .order-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: var(--gradient-primary);
+        opacity: 0;
+        transition: opacity 0.3s ease;
+        z-index: 1;
+    }
+
+    .order-card:hover {
+        transform: translateY(-6px) scale(1.01);
+        box-shadow: var(--shadow-xl);
+        border-color: rgba(255, 255, 255, 0.3);
+    }
+
+    .order-card:hover::before {
+        opacity: 0.05;
+    }
+
+    .order-header {
+        padding: 1.5rem;
+        border-bottom: 1px solid var(--dark-border);
+        position: relative;
+        z-index: 2;
+    }
+
+    .order-id {
+        font-size: 1.25rem;
+        font-weight: 700;
+        color: var(--primary-color);
+        text-decoration: none;
+        transition: color 0.3s ease;
+    }
+
+    .order-id:hover {
+        color: var(--primary-dark);
+    }
+
+    .order-date {
+        color: var(--text-muted);
+        font-size: 0.875rem;
+    }
+
+    .order-body {
+        padding: 1.5rem;
+        position: relative;
+        z-index: 2;
+    }
+
+    .order-customer {
+        display: flex;
+        align-items: center;
+        margin-bottom: 1rem;
+    }
+
+    .customer-avatar {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background: var(--gradient-success);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-weight: 600;
+        margin-right: 0.75rem;
+        font-size: 0.875rem;
+    }
+
+    .customer-info h6 {
+        color: var(--text-primary);
+        margin: 0;
+        font-weight: 600;
+    }
+
+    .customer-info small {
+        color: var(--text-secondary);
+    }
+
+    .order-total {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: var(--text-primary);
+        text-align: right;
+    }
+
+    .order-actions {
+        position: absolute;
+        top: 1rem;
+        right: 1rem;
+        opacity: 0;
+        transition: all 0.3s ease;
+        z-index: 3;
+    }
+
+    .order-card:hover .order-actions {
+        opacity: 1;
+    }
+
+    .status-badge {
+        padding: 0.5rem 1rem;
+        border-radius: 20px;
+        font-weight: 600;
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .status-badge::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+        transition: left 0.5s ease;
+    }
+
+    .status-badge:hover::before {
+        left: 100%;
+    }
+
+    .status-new {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+    }
+
+    .status-pending {
+        background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        color: white;
+    }
+
+    .status-paid {
+        background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+        color: white;
+    }
+
+    .status-delivered {
+        background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+        color: white;
+    }
+
+    .status-cancelled {
+        background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+        color: white;
+    }
+
+    .order-stats {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1rem;
+        margin-bottom: 2rem;
+    }
+
+    .stat-box {
+        background: var(--dark-surface);
+        border: 1px solid var(--dark-border);
+        border-radius: 12px;
+        padding: 1.5rem;
+        text-align: center;
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .stat-box::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: var(--gradient-primary);
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    }
+
+    .stat-box:hover {
+        transform: translateY(-4px);
+        box-shadow: var(--shadow-lg);
+    }
+
+    .stat-box:hover::before {
+        opacity: 0.1;
+    }
+
+    .stat-icon {
+        font-size: 2rem;
+        background: var(--gradient-primary);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        margin-bottom: 0.5rem;
+    }
+
+    .stat-value {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: var(--text-primary);
+        margin-bottom: 0.25rem;
+    }
+
+    .stat-label {
+        color: var(--text-secondary);
+        font-size: 0.875rem;
+    }
+
+    .quick-filters {
+        display: flex;
+        gap: 0.5rem;
+        margin-bottom: 1rem;
+        flex-wrap: wrap;
+    }
+
+    .filter-chip {
+        background: var(--dark-surface);
+        border: 1px solid var(--dark-border);
+        color: var(--text-secondary);
+        padding: 0.5rem 1rem;
+        border-radius: 20px;
+        font-size: 0.875rem;
+        text-decoration: none;
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .filter-chip::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: var(--gradient-primary);
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    }
+
+    .filter-chip:hover,
+    .filter-chip.active {
+        color: white;
+        border-color: transparent;
+        transform: translateY(-2px);
+    }
+
+    .filter-chip:hover::before,
+    .filter-chip.active::before {
+        opacity: 1;
+    }
+
+    .filter-chip span {
+        position: relative;
+        z-index: 2;
+    }
+
+    .order-timeline {
+        position: relative;
+        padding-left: 2rem;
+    }
+
+    .order-timeline::before {
+        content: '';
+        position: absolute;
+        left: 0.5rem;
+        top: 0;
+        bottom: 0;
+        width: 2px;
+        background: var(--gradient-primary);
+    }
+
+    .timeline-item {
+        position: relative;
+        margin-bottom: 1rem;
+    }
+
+    .timeline-item::before {
+        content: '';
+        position: absolute;
+        left: -1.75rem;
+        top: 0.25rem;
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        background: var(--gradient-primary);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Page Heading -->
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <div>
+            <h1 class="h3 mb-0" style="color: var(--text-primary); background: var(--gradient-primary); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">Orders</h1>
+            <p class="text-muted mb-0">Track and manage customer orders</p>
+        </div>
+        <a href="{% url 'dashboard:order_create' %}" class="btn btn-primary shadow-sm">
+            <i class="fas fa-plus fa-sm me-2"></i> New Order
+        </a>
+    </div>
+
+    <!-- Order Statistics -->
+    <div class="order-stats">
+        <div class="stat-box">
+            <i class="fas fa-shopping-cart stat-icon"></i>
+            <div class="stat-value">{{ orders.paginator.count|default:"0" }}</div>
+            <div class="stat-label">Total Orders</div>
+        </div>
+        <div class="stat-box">
+            <i class="fas fa-clock stat-icon"></i>
+            <div class="stat-value">8</div>
+            <div class="stat-label">Pending Orders</div>
+        </div>
+        <div class="stat-box">
+            <i class="fas fa-check-circle stat-icon"></i>
+            <div class="stat-value">45</div>
+            <div class="stat-label">Completed Today</div>
+        </div>
+        <div class="stat-box">
+            <i class="fas fa-dollar-sign stat-icon"></i>
+            <div class="stat-value">$12,450</div>
+            <div class="stat-label">Today's Revenue</div>
+        </div>
+    </div>
+
+    <!-- Quick Filters -->
+    <div class="quick-filters">
+        <a href="?status=" class="filter-chip {% if not request.GET.status %}active{% endif %}">
+            <span>All Orders</span>
+        </a>
+        <a href="?status=new" class="filter-chip {% if request.GET.status == 'new' %}active{% endif %}">
+            <span>New</span>
+        </a>
+        <a href="?status=pending" class="filter-chip {% if request.GET.status == 'pending' %}active{% endif %}">
+            <span>Pending</span>
+        </a>
+        <a href="?status=paid" class="filter-chip {% if request.GET.status == 'paid' %}active{% endif %}">
+            <span>Paid</span>
+        </a>
+        <a href="?status=delivered" class="filter-chip {% if request.GET.status == 'delivered' %}active{% endif %}">
+            <span>Delivered</span>
+        </a>
+        <a href="?status=cancelled" class="filter-chip {% if request.GET.status == 'cancelled' %}active{% endif %}">
+            <span>Cancelled</span>
+        </a>
+    </div>
+
+    <!-- Search and Filter -->
+    <div class="card shadow mb-4">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">
+                <i class="fas fa-search me-2"></i>Search and Filter
+            </h6>
+        </div>
+        <div class="card-body">
+            <form method="get" class="row g-3 align-items-center">
+                <div class="col-md-4 mb-3">
+                    <div class="position-relative">
+                        <i class="fas fa-search position-absolute" style="left: 1rem; top: 50%; transform: translateY(-50%); color: var(--text-muted); z-index: 2;"></i>
+                        <input type="text" class="form-control" id="search" name="search" style="padding-left: 3rem;"
+                               placeholder="Search by customer name..." value="{{ request.GET.search|default:'' }}">
+                    </div>
+                </div>
+                <div class="col-md-3 mb-3">
+                    <select class="form-control" id="status" name="status">
+                        <option value="">All Statuses</option>
+                        <option value="new" {% if request.GET.status == 'new' %}selected{% endif %}>New</option>
+                        <option value="pending" {% if request.GET.status == 'pending' %}selected{% endif %}>Pending</option>
+                        <option value="paid" {% if request.GET.status == 'paid' %}selected{% endif %}>Paid</option>
+                        <option value="delivered" {% if request.GET.status == 'delivered' %}selected{% endif %}>Delivered</option>
+                        <option value="cancelled" {% if request.GET.status == 'cancelled' %}selected{% endif %}>Cancelled</option>
+                    </select>
+                </div>
+                <div class="col-md-3 mb-3">
+                    <select class="form-control" id="sort" name="sort">
+                        <option value="-date_ordered" {% if request.GET.sort == '-date_ordered' or not request.GET.sort %}selected{% endif %}>Newest First</option>
+                        <option value="date_ordered" {% if request.GET.sort == 'date_ordered' %}selected{% endif %}>Oldest First</option>
+                        <option value="customer__name" {% if request.GET.sort == 'customer__name' %}selected{% endif %}>Customer Name (A-Z)</option>
+                        <option value="-total" {% if request.GET.sort == '-total' %}selected{% endif %}>Highest Total</option>
+                    </select>
+                </div>
+                <div class="col-md-2 mb-3">
+                    <button type="submit" class="btn btn-primary w-100">
+                        <i class="fas fa-filter me-2"></i>Apply
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Orders List -->
+    <div class="row">
+        {% for order in orders %}
+        <div class="col-lg-6 col-xl-4 mb-4">
+            <div class="order-card">
+                <div class="order-actions">
+                    <div class="btn-group">
+                        <a href="{% url 'dashboard:order_detail' order.id %}" class="btn btn-info btn-sm">
+                            <i class="fas fa-eye"></i>
+                        </a>
+                        <a href="{% url 'dashboard:order_update' order.id %}" class="btn btn-warning btn-sm">
+                            <i class="fas fa-edit"></i>
+                        </a>
+                        <a href="{% url 'dashboard:order_delete' order.id %}" class="btn btn-danger btn-sm">
+                            <i class="fas fa-trash"></i>
+                        </a>
+                    </div>
+                </div>
+
+                <div class="order-header">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <a href="{% url 'dashboard:order_detail' order.id %}" class="order-id">
+                                #{{ order.id }}
+                            </a>
+                            <div class="order-date">{{ order.date_ordered|date:"M d, Y H:i" }}</div>
+                        </div>
+                        <span class="status-badge status-{{ order.status }}">
+                            {{ order.status|title }}
+                        </span>
+                    </div>
+                </div>
+
+                <div class="order-body">
+                    <div class="order-customer">
+                        <div class="customer-avatar">
+                            {{ order.customer.name|first|upper }}
+                        </div>
+                        <div class="customer-info">
+                            <h6>{{ order.customer.name }}</h6>
+                            <small>{{ order.customer.email }}</small>
+                        </div>
+                    </div>
+
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <small style="color: var(--text-muted);">Total Amount</small>
+                            <div class="order-total">${{ order.get_cart_total|floatformat:2 }}</div>
+                        </div>
+                        <div class="text-end">
+                            <small style="color: var(--text-muted);">Items</small>
+                            <div style="color: var(--text-primary); font-weight: 600;">{{ order.get_cart_items }}</div>
+                        </div>
+                    </div>
+
+                    {% if order.status == 'delivered' %}
+                    <div class="order-timeline mt-3">
+                        <div class="timeline-item">
+                            <small style="color: var(--text-secondary);">Order placed</small>
+                        </div>
+                        <div class="timeline-item">
+                            <small style="color: var(--text-secondary);">Payment confirmed</small>
+                        </div>
+                        <div class="timeline-item">
+                            <small style="color: var(--text-secondary);">Order delivered</small>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <div class="col-12">
+            <div class="text-center py-5">
+                <i class="fas fa-shopping-cart fa-4x mb-3" style="color: var(--text-muted);"></i>
+                <h4 style="color: var(--text-primary);">No orders found</h4>
+                <p style="color: var(--text-secondary);">Try adjusting your search or filter to find what you're looking for</p>
+                <a href="{% url 'dashboard:order_create' %}" class="btn btn-primary">
+                    <i class="fas fa-plus me-2"></i>Create Your First Order
+                </a>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- Pagination -->
+    {% if orders.has_other_pages %}
+    <nav aria-label="Page navigation" class="mt-4">
+        <ul class="pagination justify-content-center">
+            {% if orders.has_previous %}
+            <li class="page-item">
+                <a class="page-link" href="?page=1{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}{% if request.GET.sort %}&sort={{ request.GET.sort }}{% endif %}" aria-label="First">
+                    <span aria-hidden="true">&laquo;&laquo;</span>
+                </a>
+            </li>
+            <li class="page-item">
+                <a class="page-link" href="?page={{ orders.previous_page_number }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}{% if request.GET.sort %}&sort={{ request.GET.sort }}{% endif %}" aria-label="Previous">
+                    <span aria-hidden="true">&laquo;</span>
+                </a>
+            </li>
+            {% endif %}
+
+            {% for i in orders.paginator.page_range %}
+                {% if orders.number == i %}
+                <li class="page-item active"><span class="page-link">{{ i }}</span></li>
+                {% elif i > orders.number|add:'-3' and i < orders.number|add:'3' %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ i }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}{% if request.GET.sort %}&sort={{ request.GET.sort }}{% endif %}">{{ i }}</a>
+                </li>
+                {% endif %}
+            {% endfor %}
+
+            {% if orders.has_next %}
+            <li class="page-item">
+                <a class="page-link" href="?page={{ orders.next_page_number }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}{% if request.GET.sort %}&sort={{ request.GET.sort }}{% endif %}" aria-label="Next">
+                    <span aria-hidden="true">&raquo;</span>
+                </a>
+            </li>
+            <li class="page-item">
+                <a class="page-link" href="?page={{ orders.paginator.num_pages }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.status %}&status={{ request.GET.status }}{% endif %}{% if request.GET.sort %}&sort={{ request.GET.sort }}{% endif %}" aria-label="Last">
+                    <span aria-hidden="true">&raquo;&raquo;</span>
+                </a>
+            </li>
+            {% endif %}
+        </ul>
+    </nav>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Order card animations
+    const orderCards = document.querySelectorAll('.order-card');
+    orderCards.forEach((card, index) => {
+        card.style.animationDelay = `${index * 0.1}s`;
+        card.style.animation = 'fadeInUp 0.6s ease forwards';
+    });
+
+    // Stat box animations
+    const statBoxes = document.querySelectorAll('.stat-box');
+    statBoxes.forEach((box, index) => {
+        box.style.animationDelay = `${index * 0.15}s`;
+        box.style.animation = 'fadeInUp 0.6s ease forwards';
+    });
+
+    // Filter chip interactions
+    document.querySelectorAll('.filter-chip').forEach(chip => {
+        chip.addEventListener('click', function(e) {
+            // Add loading state
+            this.style.opacity = '0.7';
+            this.innerHTML = '<span><i class="fas fa-spinner fa-spin me-2"></i>Loading...</span>';
+        });
+    });
+
+    // Search input focus effect
+    const searchInput = document.getElementById('search');
+    searchInput.addEventListener('focus', function() {
+        this.parentElement.style.transform = 'scale(1.02)';
+        this.parentElement.style.transition = 'transform 0.3s ease';
+    });
+
+    searchInput.addEventListener('blur', function() {
+        this.parentElement.style.transform = 'scale(1)';
+    });
+
+    // Status badge hover effects
+    document.querySelectorAll('.status-badge').forEach(badge => {
+        badge.addEventListener('mouseenter', function() {
+            this.style.transform = 'scale(1.05)';
+        });
+
+        badge.addEventListener('mouseleave', function() {
+            this.style.transform = 'scale(1)';
+        });
+    });
+</script>
+{% endblock %}

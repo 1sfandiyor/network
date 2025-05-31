@@ -1,0 +1,703 @@
+{% extends 'base.html' %}
+
+{% block title %}Order #{{ order.id }} - Clothing Store CRM{% endblock %}
+
+{% block extra_css %}
+<style>
+    .order-hero {
+        background: var(--dark-surface);
+        border: 1px solid var(--dark-border);
+        border-radius: 20px;
+        padding: 2rem;
+        margin-bottom: 2rem;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .order-hero::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: var(--gradient-primary);
+    }
+
+    .order-id-display {
+        font-size: 3rem;
+        font-weight: 700;
+        background: var(--gradient-primary);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        margin-bottom: 1rem;
+    }
+
+    .order-status-large {
+        display: inline-block;
+        padding: 1rem 2rem;
+        border-radius: 30px;
+        font-weight: 700;
+        font-size: 1.1rem;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        margin-bottom: 1rem;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .order-status-large::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+        transition: left 0.5s ease;
+    }
+
+    .order-status-large:hover::before {
+        left: 100%;
+    }
+
+    .status-new {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+    }
+
+    .status-pending {
+        background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        color: white;
+    }
+
+    .status-paid {
+        background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+        color: white;
+    }
+
+    .status-delivered {
+        background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+        color: white;
+    }
+
+    .status-cancelled {
+        background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+        color: white;
+    }
+
+    .order-summary {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1.5rem;
+        margin-bottom: 2rem;
+    }
+
+    .summary-card {
+        background: var(--dark-surface);
+        border: 1px solid var(--dark-border);
+        border-radius: 16px;
+        padding: 1.5rem;
+        text-align: center;
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .summary-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: var(--gradient-primary);
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    }
+
+    .summary-card:hover {
+        transform: translateY(-6px);
+        box-shadow: var(--shadow-xl);
+    }
+
+    .summary-card:hover::before {
+        opacity: 0.1;
+    }
+
+    .summary-icon {
+        font-size: 2rem;
+        background: var(--gradient-primary);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        margin-bottom: 1rem;
+        position: relative;
+        z-index: 2;
+    }
+
+    .summary-value {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: var(--text-primary);
+        margin-bottom: 0.5rem;
+        position: relative;
+        z-index: 2;
+    }
+
+    .summary-label {
+        color: var(--text-muted);
+        font-size: 0.875rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        position: relative;
+        z-index: 2;
+    }
+
+    .customer-info-card {
+        background: var(--dark-surface);
+        border: 1px solid var(--dark-border);
+        border-radius: 16px;
+        padding: 2rem;
+        margin-bottom: 2rem;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .customer-info-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 3px;
+        background: var(--gradient-success);
+    }
+
+    .customer-avatar {
+        width: 80px;
+        height: 80px;
+        border-radius: 50%;
+        background: var(--gradient-success);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 2rem;
+        font-weight: 700;
+        margin-bottom: 1rem;
+        transition: all 0.3s ease;
+    }
+
+    .customer-avatar:hover {
+        transform: scale(1.1);
+        box-shadow: 0 0 30px rgba(16, 185, 129, 0.5);
+    }
+
+    .customer-name {
+        font-size: 1.5rem;
+        font-weight: 600;
+        color: var(--text-primary);
+        margin-bottom: 0.5rem;
+    }
+
+    .customer-details {
+        color: var(--text-secondary);
+        line-height: 1.6;
+    }
+
+    .items-table {
+        background: var(--dark-surface);
+        border: 1px solid var(--dark-border);
+        border-radius: 16px;
+        overflow: hidden;
+        margin-bottom: 2rem;
+    }
+
+    .table-header {
+        background: rgba(255, 255, 255, 0.05);
+        padding: 1.5rem;
+        border-bottom: 1px solid var(--dark-border);
+    }
+
+    .item-row {
+        padding: 1.5rem;
+        border-bottom: 1px solid var(--dark-border);
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+    }
+
+    .item-row:last-child {
+        border-bottom: none;
+    }
+
+    .item-row:hover {
+        background: rgba(255, 255, 255, 0.05);
+        transform: translateX(8px);
+    }
+
+    .item-image {
+        width: 60px;
+        height: 60px;
+        border-radius: 12px;
+        object-fit: cover;
+        border: 2px solid var(--dark-border);
+        transition: all 0.3s ease;
+    }
+
+    .item-image:hover {
+        transform: scale(1.1);
+        border-color: var(--primary-color);
+    }
+
+    .item-details {
+        flex: 1;
+    }
+
+    .item-name {
+        font-weight: 600;
+        color: var(--text-primary);
+        margin-bottom: 0.25rem;
+        text-decoration: none;
+        transition: color 0.3s ease;
+    }
+
+    .item-name:hover {
+        color: var(--primary-color);
+    }
+
+    .item-price {
+        color: var(--text-secondary);
+        font-size: 0.875rem;
+    }
+
+    .item-quantity {
+        background: rgba(255, 255, 255, 0.1);
+        color: var(--text-primary);
+        padding: 0.5rem 1rem;
+        border-radius: 20px;
+        font-weight: 600;
+        min-width: 60px;
+        text-align: center;
+    }
+
+    .item-total {
+        font-weight: 700;
+        color: var(--primary-color);
+        font-size: 1.1rem;
+        min-width: 80px;
+        text-align: right;
+    }
+
+    .order-total-section {
+        background: var(--dark-surface);
+        border: 1px solid var(--dark-border);
+        border-radius: 16px;
+        padding: 2rem;
+        text-align: right;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .order-total-section::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 3px;
+        background: var(--gradient-primary);
+    }
+
+    .total-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0.75rem 0;
+        border-bottom: 1px solid var(--dark-border);
+    }
+
+    .total-row:last-child {
+        border-bottom: none;
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: var(--primary-color);
+        padding-top: 1rem;
+    }
+
+    .total-label {
+        color: var(--text-secondary);
+    }
+
+    .total-value {
+        color: var(--text-primary);
+        font-weight: 600;
+    }
+
+    .action-buttons {
+        display: flex;
+        gap: 1rem;
+        justify-content: center;
+        margin-top: 2rem;
+        flex-wrap: wrap;
+    }
+
+    .action-btn {
+        padding: 1rem 2rem;
+        border-radius: 12px;
+        font-weight: 600;
+        text-decoration: none;
+        transition: all 0.3s ease;
+        border: none;
+        cursor: pointer;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .action-btn::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+        transition: left 0.5s ease;
+    }
+
+    .action-btn:hover::before {
+        left: 100%;
+    }
+
+    .btn-edit {
+        background: var(--gradient-primary);
+        color: white;
+    }
+
+    .btn-delete {
+        background: var(--gradient-secondary);
+        color: white;
+    }
+
+    .btn-back {
+        background: rgba(255, 255, 255, 0.1);
+        color: var(--text-secondary);
+        border: 1px solid var(--dark-border);
+    }
+
+    .action-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+    }
+
+    .order-timeline {
+        background: var(--dark-surface);
+        border: 1px solid var(--dark-border);
+        border-radius: 16px;
+        padding: 2rem;
+        margin-top: 2rem;
+    }
+
+    .timeline {
+        position: relative;
+        padding-left: 2rem;
+    }
+
+    .timeline::before {
+        content: '';
+        position: absolute;
+        left: 0.5rem;
+        top: 0;
+        bottom: 0;
+        width: 2px;
+        background: var(--gradient-primary);
+    }
+
+    .timeline-item {
+        position: relative;
+        margin-bottom: 2rem;
+        padding: 1rem;
+        background: rgba(255, 255, 255, 0.05);
+        border-radius: 12px;
+        margin-left: 1rem;
+    }
+
+    .timeline-item::before {
+        content: '';
+        position: absolute;
+        left: -2rem;
+        top: 1rem;
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        background: var(--gradient-primary);
+    }
+
+    .timeline-item.completed::before {
+        background: var(--gradient-success);
+    }
+
+    @media (max-width: 768px) {
+        .order-id-display {
+            font-size: 2rem;
+        }
+
+        .item-row {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 1rem;
+        }
+
+        .action-buttons {
+            flex-direction: column;
+        }
+
+        .total-row {
+            flex-direction: column;
+            align-items: flex-end;
+            gap: 0.5rem;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Order Hero Section -->
+    <div class="order-hero">
+        <div class="row">
+            <div class="col-lg-8">
+                <h1 class="order-id-display">Order #{{ order.id }}</h1>
+                <div class="order-status-large status-{{ order.status }}">
+                    {{ order.status|title }}
+                </div>
+                <p style="color: var(--text-secondary); font-size: 1.1rem;">
+                    <i class="fas fa-calendar me-2"></i>{{ order.date_ordered|date:"F d, Y H:i" }}
+                </p>
+            </div>
+            <div class="col-lg-4 text-lg-end">
+                <div class="action-buttons">
+                    <a href="{% url 'dashboard:order_update' order.id %}" class="action-btn btn-edit">
+                        <i class="fas fa-edit me-2"></i>Edit
+                    </a>
+                    <a href="{% url 'dashboard:order_delete' order.id %}" class="action-btn btn-delete">
+                        <i class="fas fa-trash me-2"></i>Delete
+                    </a>
+                    <a href="{% url 'dashboard:order_list' %}" class="action-btn btn-back">
+                        <i class="fas fa-arrow-left me-2"></i>Back
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Order Summary -->
+    <div class="order-summary">
+        <div class="summary-card">
+            <i class="fas fa-shopping-cart summary-icon"></i>
+            <div class="summary-value">{{ order.get_cart_items }}</div>
+            <div class="summary-label">Total Items</div>
+        </div>
+        <div class="summary-card">
+            <i class="fas fa-dollar-sign summary-icon"></i>
+            <div class="summary-value">${{ order.get_cart_total|floatformat:2 }}</div>
+            <div class="summary-label">Total Amount</div>
+        </div>
+        <div class="summary-card">
+            <i class="fas fa-credit-card summary-icon"></i>
+            <div class="summary-value">{{ order.transaction_id|default:"N/A" }}</div>
+            <div class="summary-label">Transaction ID</div>
+        </div>
+        <div class="summary-card">
+            <i class="fas fa-truck summary-icon"></i>
+            <div class="summary-value">{{ order.status|title }}</div>
+            <div class="summary-label">Status</div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Customer Information -->
+        <div class="col-lg-4">
+            <div class="customer-info-card">
+                <h6 class="mb-3" style="color: var(--text-primary);">
+                    <i class="fas fa-user me-2"></i>Customer Information
+                </h6>
+                <div class="text-center">
+                    <div class="customer-avatar">
+                        {{ order.customer.name|first|upper }}
+                    </div>
+                    <h5 class="customer-name">
+                        <a href="{% url 'dashboard:customer_detail' order.customer.id %}" style="color: var(--text-primary); text-decoration: none;">
+                            {{ order.customer.name }}
+                        </a>
+                    </h5>
+                    <div class="customer-details">
+                        <p><i class="fas fa-envelope me-2"></i>{{ order.customer.email }}</p>
+                        <p><i class="fas fa-phone me-2"></i>{{ order.customer.phone }}</p>
+                        <p><i class="fas fa-map-marker-alt me-2"></i>{{ order.customer.address }}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Order Items -->
+        <div class="col-lg-8">
+            <div class="items-table">
+                <div class="table-header">
+                    <h6 class="m-0 font-weight-bold text-primary">
+                        <i class="fas fa-list me-2"></i>Order Items
+                    </h6>
+                </div>
+                <div class="items-body">
+                    {% for item in order_items %}
+                    <div class="item-row">
+                        <img src="{{ item.product.imageURL }}" alt="{{ item.product.name }}" class="item-image">
+                        <div class="item-details">
+                            <a href="{% url 'dashboard:product_detail' item.product.id %}" class="item-name">
+                                {{ item.product.name }}
+                            </a>
+                            <div class="item-price">${{ item.product.price }} each</div>
+                        </div>
+                        <div class="item-quantity">{{ item.quantity }}</div>
+                        <div class="item-total">${{ item.get_total|floatformat:2 }}</div>
+                    </div>
+                    {% empty %}
+                    <div class="item-row text-center py-4">
+                        <div style="width: 100%;">
+                            <i class="fas fa-box-open fa-3x mb-3" style="color: var(--text-muted);"></i>
+                            <p style="color: var(--text-secondary);">No items in this order</p>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Order Total -->
+    <div class="row">
+        <div class="col-lg-6 offset-lg-6">
+            <div class="order-total-section">
+                <h6 class="mb-3" style="color: var(--text-primary);">
+                    <i class="fas fa-calculator me-2"></i>Order Summary
+                </h6>
+                <div class="total-row">
+                    <span class="total-label">Subtotal:</span>
+                    <span class="total-value">${{ order.get_cart_total|floatformat:2 }}</span>
+                </div>
+                <div class="total-row">
+                    <span class="total-label">Tax:</span>
+                    <span class="total-value">$0.00</span>
+                </div>
+                <div class="total-row">
+                    <span class="total-label">Shipping:</span>
+                    <span class="total-value">$0.00</span>
+                </div>
+                <div class="total-row">
+                    <span>Total:</span>
+                    <span>${{ order.get_cart_total|floatformat:2 }}</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Order Timeline -->
+    <div class="order-timeline">
+        <h6 class="mb-4" style="color: var(--text-primary);">
+            <i class="fas fa-timeline me-2"></i>Order Timeline
+        </h6>
+        <div class="timeline">
+            <div class="timeline-item completed">
+                <h6 style="color: var(--text-primary);">Order Placed</h6>
+                <p style="color: var(--text-secondary);">{{ order.date_ordered|date:"F d, Y H:i" }}</p>
+            </div>
+            {% if order.status != 'new' %}
+            <div class="timeline-item completed">
+                <h6 style="color: var(--text-primary);">Order Confirmed</h6>
+                <p style="color: var(--text-secondary);">{{ order.date_ordered|date:"F d, Y H:i" }}</p>
+            </div>
+            {% endif %}
+            {% if order.status == 'paid' or order.status == 'delivered' %}
+            <div class="timeline-item completed">
+                <h6 style="color: var(--text-primary);">Payment Received</h6>
+                <p style="color: var(--text-secondary);">{{ order.date_ordered|date:"F d, Y H:i" }}</p>
+            </div>
+            {% endif %}
+            {% if order.status == 'delivered' %}
+            <div class="timeline-item completed">
+                <h6 style="color: var(--text-primary);">Order Delivered</h6>
+                <p style="color: var(--text-secondary);">{{ order.date_ordered|date:"F d, Y H:i" }}</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Page load animations
+    document.addEventListener('DOMContentLoaded', function() {
+        const elements = document.querySelectorAll('.summary-card, .item-row, .timeline-item');
+        elements.forEach((element, index) => {
+            element.style.opacity = '0';
+            element.style.transform = 'translateY(20px)';
+            element.style.animation = `fadeInUp 0.6s ease forwards ${index * 0.1}s`;
+        });
+    });
+
+    // Customer avatar hover effect
+    const avatar = document.querySelector('.customer-avatar');
+    if (avatar) {
+        avatar.addEventListener('mouseenter', function() {
+            this.style.transform = 'scale(1.1) rotate(5deg)';
+        });
+
+        avatar.addEventListener('mouseleave', function() {
+            this.style.transform = 'scale(1) rotate(0deg)';
+        });
+    }
+
+    // Item image hover effects
+    document.querySelectorAll('.item-image').forEach(img => {
+        img.addEventListener('mouseenter', function() {
+            this.style.transform = 'scale(1.1) rotate(2deg)';
+        });
+
+        img.addEventListener('mouseleave', function() {
+            this.style.transform = 'scale(1) rotate(0deg)';
+        });
+    });
+
+    // Status badge animation
+    const statusBadge = document.querySelector('.order-status-large');
+    if (statusBadge) {
+        statusBadge.addEventListener('mouseenter', function() {
+            this.style.transform = 'scale(1.05)';
+        });
+
+        statusBadge.addEventListener('mouseleave', function() {
+            this.style.transform = 'scale(1)';
+        });
+    }
+
+    // Total amount counter animation
+    const totalAmount = document.querySelector('.order-total-section .total-row:last-child span:last-child');
+    if (totalAmount) {
+        const finalValue = parseFloat(totalAmount.textContent.replace('$', ''));
+        let currentValue = 0;
+        const increment = finalValue / 50;
+        const timer = setInterval(() => {
+            currentValue += increment;
+            if (currentValue >= finalValue) {
+                currentValue = finalValue;
+                clearInterval(timer);
+            }
+            totalAmount.textContent = `$${currentValue.toFixed(2)}`;
+        }, 30);
+    }
+</script>
+{% endblock %}

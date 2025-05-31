@@ -1,0 +1,596 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+
+{% block title %}{% if product %}Edit{% else %}Add{% endif %} Product - Clothing Store CRM{% endblock %}
+
+{% block extra_css %}
+<style>
+    .form-container {
+        background: var(--dark-surface);
+        border: 1px solid var(--dark-border);
+        border-radius: 20px;
+        padding: 2rem;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .form-container::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: var(--gradient-primary);
+    }
+
+    .form-header {
+        text-align: center;
+        margin-bottom: 2rem;
+    }
+
+    .form-title {
+        font-size: 2.5rem;
+        font-weight: 700;
+        background: var(--gradient-primary);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        margin-bottom: 0.5rem;
+    }
+
+    .form-subtitle {
+        color: var(--text-secondary);
+        font-size: 1.1rem;
+    }
+
+    .form-section {
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid var(--dark-border);
+        border-radius: 16px;
+        padding: 2rem;
+        margin-bottom: 2rem;
+        transition: all 0.3s ease;
+    }
+
+    .form-section:hover {
+        background: rgba(255, 255, 255, 0.08);
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-lg);
+    }
+
+    .section-title {
+        color: var(--text-primary);
+        font-size: 1.25rem;
+        font-weight: 600;
+        margin-bottom: 1.5rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .section-icon {
+        font-size: 1.5rem;
+        background: var(--gradient-primary);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+
+    .form-group {
+        margin-bottom: 1.5rem;
+        position: relative;
+    }
+
+    .form-label {
+        color: var(--text-primary);
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+        display: block;
+        font-size: 0.875rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .form-control, .form-select {
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid var(--dark-border);
+        color: var(--text-primary);
+        border-radius: 12px;
+        padding: 1rem;
+        transition: all 0.3s ease;
+        font-size: 1rem;
+    }
+
+    .form-control:focus, .form-select:focus {
+        background: rgba(255, 255, 255, 0.1);
+        border-color: var(--primary-color);
+        box-shadow: 0 0 0 0.2rem rgba(37, 99, 235, 0.25);
+        color: var(--text-primary);
+        transform: translateY(-2px);
+    }
+
+    .form-control::placeholder {
+        color: var(--text-muted);
+    }
+
+    .form-text {
+        color: var(--text-muted);
+        font-size: 0.875rem;
+        margin-top: 0.5rem;
+    }
+
+    .image-upload-area {
+        border: 2px dashed var(--dark-border);
+        border-radius: 12px;
+        padding: 2rem;
+        text-align: center;
+        transition: all 0.3s ease;
+        cursor: pointer;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .image-upload-area:hover {
+        border-color: var(--primary-color);
+        background: rgba(37, 99, 235, 0.1);
+    }
+
+    .image-upload-area.dragover {
+        border-color: var(--primary-color);
+        background: rgba(37, 99, 235, 0.2);
+        transform: scale(1.02);
+    }
+
+    .upload-icon {
+        font-size: 3rem;
+        color: var(--text-muted);
+        margin-bottom: 1rem;
+        transition: all 0.3s ease;
+    }
+
+    .image-upload-area:hover .upload-icon {
+        color: var(--primary-color);
+        transform: scale(1.1);
+    }
+
+    .upload-text {
+        color: var(--text-secondary);
+        font-size: 1.1rem;
+        margin-bottom: 0.5rem;
+    }
+
+    .upload-hint {
+        color: var(--text-muted);
+        font-size: 0.875rem;
+    }
+
+    .current-image {
+        max-width: 200px;
+        max-height: 200px;
+        border-radius: 12px;
+        border: 2px solid var(--dark-border);
+        margin-top: 1rem;
+        transition: all 0.3s ease;
+    }
+
+    .current-image:hover {
+        transform: scale(1.05);
+        border-color: var(--primary-color);
+    }
+
+    .form-actions {
+        display: flex;
+        gap: 1rem;
+        justify-content: center;
+        margin-top: 3rem;
+        flex-wrap: wrap;
+    }
+
+    .btn-submit {
+        background: var(--gradient-primary);
+        color: white;
+        border: none;
+        border-radius: 12px;
+        padding: 1rem 3rem;
+        font-weight: 600;
+        font-size: 1.1rem;
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+        cursor: pointer;
+    }
+
+    .btn-submit::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+        transition: left 0.5s ease;
+    }
+
+    .btn-submit:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(37, 99, 235, 0.6);
+    }
+
+    .btn-submit:hover::before {
+        left: 100%;
+    }
+
+    .btn-cancel {
+        background: rgba(255, 255, 255, 0.1);
+        color: var(--text-secondary);
+        border: 1px solid var(--dark-border);
+        border-radius: 12px;
+        padding: 1rem 2rem;
+        font-weight: 600;
+        text-decoration: none;
+        transition: all 0.3s ease;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .btn-cancel:hover {
+        background: rgba(255, 255, 255, 0.2);
+        color: var(--text-primary);
+        transform: translateY(-2px);
+    }
+
+    .price-input-group {
+        position: relative;
+    }
+
+    .price-input-group::before {
+        content: '$';
+        position: absolute;
+        left: 1rem;
+        top: 50%;
+        transform: translateY(-50%);
+        color: var(--text-muted);
+        font-weight: 600;
+        z-index: 2;
+    }
+
+    .price-input-group .form-control {
+        padding-left: 2.5rem;
+    }
+
+    .stock-indicator {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        margin-top: 0.5rem;
+    }
+
+    .stock-dot {
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+        transition: all 0.3s ease;
+    }
+
+    .stock-high {
+        background: var(--gradient-success);
+    }
+
+    .stock-medium {
+        background: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
+    }
+
+    .stock-low {
+        background: var(--gradient-secondary);
+    }
+
+    .form-progress {
+        background: var(--dark-border);
+        height: 4px;
+        border-radius: 2px;
+        margin-bottom: 2rem;
+        overflow: hidden;
+    }
+
+    .progress-bar {
+        background: var(--gradient-primary);
+        height: 100%;
+        border-radius: 2px;
+        transition: width 0.3s ease;
+    }
+
+    @media (max-width: 768px) {
+        .form-container {
+            padding: 1.5rem;
+        }
+
+        .form-title {
+            font-size: 2rem;
+        }
+
+        .form-actions {
+            flex-direction: column;
+        }
+
+        .btn-submit, .btn-cancel {
+            width: 100%;
+            justify-content: center;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Form Progress -->
+    <div class="form-progress">
+        <div class="progress-bar" style="width: 75%;"></div>
+    </div>
+
+    <div class="form-container">
+        <!-- Form Header -->
+        <div class="form-header">
+            <h1 class="form-title">
+                {% if product %}
+                    <i class="fas fa-edit me-3"></i>Edit Product
+                {% else %}
+                    <i class="fas fa-plus me-3"></i>Add New Product
+                {% endif %}
+            </h1>
+            <p class="form-subtitle">
+                {% if product %}
+                    Update product information and details
+                {% else %}
+                    Create a new product for your inventory
+                {% endif %}
+            </p>
+        </div>
+
+        <form method="POST" enctype="multipart/form-data" id="productForm">
+            {% csrf_token %}
+
+            <!-- Basic Information Section -->
+            <div class="form-section">
+                <h3 class="section-title">
+                    <i class="fas fa-info-circle section-icon"></i>
+                    Basic Information
+                </h3>
+
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label for="{{ form.name.id_for_label }}" class="form-label">Product Name</label>
+                            {{ form.name }}
+                            <div class="form-text">Enter a descriptive name for your product</div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label for="{{ form.category.id_for_label }}" class="form-label">Category</label>
+                            {{ form.category }}
+                            <div class="form-text">Select the appropriate category</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="{{ form.description.id_for_label }}" class="form-label">Description</label>
+                    {{ form.description }}
+                    <div class="form-text">Provide a detailed description of the product</div>
+                </div>
+            </div>
+
+            <!-- Pricing & Inventory Section -->
+            <div class="form-section">
+                <h3 class="section-title">
+                    <i class="fas fa-dollar-sign section-icon"></i>
+                    Pricing & Inventory
+                </h3>
+
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label for="{{ form.price.id_for_label }}" class="form-label">Price</label>
+                            <div class="price-input-group">
+                                {{ form.price }}
+                            </div>
+                            <div class="form-text">Set the selling price for this product</div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label for="{{ form.stock.id_for_label }}" class="form-label">Stock Quantity</label>
+                            {{ form.stock }}
+                            <div class="stock-indicator">
+                                <div class="stock-dot stock-high"></div>
+                                <span style="color: var(--text-muted); font-size: 0.875rem;">Stock Level Indicator</span>
+                            </div>
+                            <div class="form-text">Enter the available quantity in stock</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Product Image Section -->
+            <div class="form-section">
+                <h3 class="section-title">
+                    <i class="fas fa-image section-icon"></i>
+                    Product Image
+                </h3>
+
+                <div class="form-group">
+                    <label for="{{ form.image.id_for_label }}" class="form-label">Product Image</label>
+                    <div class="image-upload-area" onclick="document.getElementById('{{ form.image.id_for_label }}').click()">
+                        <i class="fas fa-cloud-upload-alt upload-icon"></i>
+                        <div class="upload-text">Click to upload or drag and drop</div>
+                        <div class="upload-hint">PNG, JPG, GIF up to 10MB</div>
+                    </div>
+                    {{ form.image }}
+
+                    {% if product and product.image %}
+                    <div class="text-center">
+                        <p style="color: var(--text-secondary); margin-top: 1rem;">Current Image:</p>
+                        <img src="{{ product.imageURL }}" alt="{{ product.name }}" class="current-image">
+                    </div>
+                    {% endif %}
+                    <div class="form-text">Upload a high-quality image of your product</div>
+                </div>
+            </div>
+
+            <!-- Form Actions -->
+            <div class="form-actions">
+                <button type="submit" class="btn-submit">
+                    <i class="fas fa-save me-2"></i>
+                    {% if product %}Update Product{% else %}Create Product{% endif %}
+                </button>
+                <a href="{% url 'dashboard:product_list' %}" class="btn-cancel">
+                    <i class="fas fa-times me-2"></i>Cancel
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Form validation and enhancement
+    document.addEventListener('DOMContentLoaded', function() {
+        const form = document.getElementById('productForm');
+        const stockInput = document.querySelector('input[name="stock"]');
+        const priceInput = document.querySelector('input[name="price"]');
+        const imageUploadArea = document.querySelector('.image-upload-area');
+        const imageInput = document.querySelector('input[type="file"]');
+        const progressBar = document.querySelector('.progress-bar');
+
+        // Stock level indicator
+        function updateStockIndicator() {
+            const stockValue = parseInt(stockInput.value) || 0;
+            const stockDot = document.querySelector('.stock-dot');
+
+            if (stockValue > 50) {
+                stockDot.className = 'stock-dot stock-high';
+            } else if (stockValue > 10) {
+                stockDot.className = 'stock-dot stock-medium';
+            } else {
+                stockDot.className = 'stock-dot stock-low';
+            }
+        }
+
+        if (stockInput) {
+            stockInput.addEventListener('input', updateStockIndicator);
+            updateStockIndicator(); // Initial call
+        }
+
+        // Price formatting
+        if (priceInput) {
+            priceInput.addEventListener('blur', function() {
+                const value = parseFloat(this.value);
+                if (!isNaN(value)) {
+                    this.value = value.toFixed(2);
+                }
+            });
+        }
+
+        // Drag and drop functionality
+        if (imageUploadArea && imageInput) {
+            imageUploadArea.addEventListener('dragover', function(e) {
+                e.preventDefault();
+                this.classList.add('dragover');
+            });
+
+            imageUploadArea.addEventListener('dragleave', function(e) {
+                e.preventDefault();
+                this.classList.remove('dragover');
+            });
+
+            imageUploadArea.addEventListener('drop', function(e) {
+                e.preventDefault();
+                this.classList.remove('dragover');
+
+                const files = e.dataTransfer.files;
+                if (files.length > 0) {
+                    imageInput.files = files;
+                    handleImagePreview(files[0]);
+                }
+            });
+
+            imageInput.addEventListener('change', function() {
+                if (this.files.length > 0) {
+                    handleImagePreview(this.files[0]);
+                }
+            });
+        }
+
+        // Image preview
+        function handleImagePreview(file) {
+            if (file && file.type.startsWith('image/')) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const existingPreview = document.querySelector('.image-preview');
+                    if (existingPreview) {
+                        existingPreview.remove();
+                    }
+
+                    const preview = document.createElement('div');
+                    preview.className = 'image-preview text-center mt-3';
+                    preview.innerHTML = `
+                        <p style="color: var(--text-secondary);">New Image Preview:</p>
+                        <img src="${e.target.result}" alt="Preview" class="current-image">
+                    `;
+                    imageUploadArea.parentNode.appendChild(preview);
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        // Form progress tracking
+        function updateProgress() {
+            const inputs = form.querySelectorAll('input[required], select[required], textarea[required]');
+            let filledInputs = 0;
+
+            inputs.forEach(input => {
+                if (input.value.trim() !== '') {
+                    filledInputs++;
+                }
+            });
+
+            const progress = (filledInputs / inputs.length) * 100;
+            progressBar.style.width = progress + '%';
+        }
+
+        // Track form progress
+        form.addEventListener('input', updateProgress);
+        form.addEventListener('change', updateProgress);
+        updateProgress(); // Initial call
+
+        // Form submission
+        form.addEventListener('submit', function(e) {
+            const submitBtn = this.querySelector('.btn-submit');
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Saving...';
+            submitBtn.disabled = true;
+        });
+
+        // Form section animations
+        const sections = document.querySelectorAll('.form-section');
+        sections.forEach((section, index) => {
+            section.style.opacity = '0';
+            section.style.transform = 'translateY(20px)';
+            section.style.animation = `fadeInUp 0.6s ease forwards ${index * 0.2}s`;
+        });
+
+        // Input focus effects
+        document.querySelectorAll('.form-control, .form-select').forEach(input => {
+            input.addEventListener('focus', function() {
+                this.parentElement.style.transform = 'scale(1.02)';
+            });
+
+            input.addEventListener('blur', function() {
+                this.parentElement.style.transform = 'scale(1)';
+            });
+        });
+    });
+</script>
+{% endblock %}

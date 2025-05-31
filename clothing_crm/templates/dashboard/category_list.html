@@ -1,0 +1,767 @@
+{% extends 'base.html' %}
+
+{% block title %}Categories - Clothing Store CRM{% endblock %}
+
+{% block extra_css %}
+<style>
+    :root {
+        --quantum-teal: #14b8a6;
+        --quantum-violet: #8b5cf6;
+        --quantum-rose: #f43f5e;
+        --quantum-amber: #f59e0b;
+        --quantum-emerald: #10b981;
+        --void-black: #0c0c0c;
+        --cosmic-surface: rgba(255, 255, 255, 0.02);
+        --hologram-glow: 0 0 25px;
+    }
+
+    body {
+        background: conic-gradient(from 0deg at 50% 50%, #0f0f23 0deg, #1a1a2e 120deg, #16213e 240deg, #0f0f23 360deg);
+        min-height: 100vh;
+        position: relative;
+    }
+
+    .category-dimension {
+        padding: 2rem;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .holographic-grid {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-image:
+            linear-gradient(rgba(20, 184, 166, 0.1) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(20, 184, 166, 0.1) 1px, transparent 1px);
+        background-size: 50px 50px;
+        animation: gridShift 20s linear infinite;
+        pointer-events: none;
+        z-index: 1;
+    }
+
+    @keyframes gridShift {
+        0% { transform: translate(0, 0); }
+        100% { transform: translate(50px, 50px); }
+    }
+
+    .dimensional-header {
+        text-align: center;
+        margin-bottom: 4rem;
+        position: relative;
+        z-index: 10;
+    }
+
+    .dimensional-title {
+        font-size: 4rem;
+        font-weight: 900;
+        background: linear-gradient(45deg, var(--quantum-teal), var(--quantum-violet), var(--quantum-rose));
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        margin-bottom: 1rem;
+        animation: dimensionalPulse 4s ease-in-out infinite;
+        position: relative;
+    }
+
+    .dimensional-title::after {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: linear-gradient(45deg, var(--quantum-teal), var(--quantum-violet), var(--quantum-rose));
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        filter: blur(10px);
+        opacity: 0.5;
+        z-index: -1;
+    }
+
+    @keyframes dimensionalPulse {
+        0%, 100% { transform: scale(1) rotateY(0deg); filter: brightness(1); }
+        50% { transform: scale(1.05) rotateY(5deg); filter: brightness(1.3); }
+    }
+
+    .category-portal-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+        gap: 2.5rem;
+        margin-bottom: 4rem;
+        position: relative;
+        z-index: 10;
+    }
+
+    .category-portal {
+        background: var(--cosmic-surface);
+        backdrop-filter: blur(25px);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 30px;
+        padding: 0;
+        position: relative;
+        overflow: hidden;
+        transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+        cursor: pointer;
+        height: 100%;
+    }
+
+    .category-portal::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: linear-gradient(135deg, var(--quantum-teal), var(--quantum-violet), var(--quantum-rose));
+        opacity: 0;
+        transition: opacity 0.4s ease;
+        z-index: 1;
+    }
+
+    .category-portal:hover {
+        transform: translateY(-25px) rotateX(15deg) rotateY(5deg);
+        box-shadow: var(--hologram-glow) var(--quantum-teal);
+        border-color: var(--quantum-teal);
+    }
+
+    .category-portal:hover::before {
+        opacity: 0.08;
+    }
+
+    .portal-header {
+        height: 150px;
+        background: linear-gradient(135deg, var(--quantum-teal), var(--quantum-violet));
+        position: relative;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        overflow: hidden;
+    }
+
+    .portal-header::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="hexagon" width="20" height="20" patternUnits="userSpaceOnUse"><polygon points="10,2 18,7 18,13 10,18 2,13 2,7" fill="none" stroke="rgba(255,255,255,0.1)" stroke-width="0.5"/></pattern></defs><rect width="100" height="100" fill="url(%23hexagon)"/></svg>');
+        animation: patternFlow 15s linear infinite;
+    }
+
+    @keyframes patternFlow {
+        0% { transform: translate(0, 0) rotate(0deg); }
+        100% { transform: translate(20px, 20px) rotate(360deg); }
+    }
+
+    .portal-icon-sphere {
+        width: 100px;
+        height: 100px;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.15);
+        backdrop-filter: blur(20px);
+        border: 2px solid rgba(255, 255, 255, 0.3);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        position: relative;
+        z-index: 2;
+        animation: sphereRotate 6s linear infinite;
+    }
+
+    @keyframes sphereRotate {
+        0% { transform: rotate(0deg) scale(1); }
+        50% { transform: rotate(180deg) scale(1.1); }
+        100% { transform: rotate(360deg) scale(1); }
+    }
+
+    .portal-icon {
+        font-size: 2.5rem;
+        color: white;
+        animation: iconCounter 6s linear infinite;
+    }
+
+    @keyframes iconCounter {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(-360deg); }
+    }
+
+    .portal-content {
+        padding: 2.5rem;
+        position: relative;
+        z-index: 2;
+    }
+
+    .portal-name {
+        font-size: 1.5rem;
+        font-weight: 800;
+        color: white;
+        margin-bottom: 1rem;
+        text-decoration: none;
+        transition: all 0.3s ease;
+        display: block;
+        text-align: center;
+    }
+
+    .portal-name:hover {
+        color: var(--quantum-teal);
+        text-shadow: var(--hologram-glow) var(--quantum-teal);
+    }
+
+    .portal-description {
+        color: rgba(255, 255, 255, 0.7);
+        font-size: 0.95rem;
+        line-height: 1.6;
+        margin-bottom: 2rem;
+        text-align: center;
+        min-height: 3rem;
+    }
+
+    .portal-metrics {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 1rem;
+        margin-bottom: 2rem;
+    }
+
+    .metric-orb {
+        text-align: center;
+        padding: 1rem;
+        background: rgba(255, 255, 255, 0.03);
+        border-radius: 20px;
+        border: 1px solid rgba(255, 255, 255, 0.05);
+        transition: all 0.3s ease;
+    }
+
+    .metric-orb:hover {
+        background: rgba(20, 184, 166, 0.1);
+        border-color: var(--quantum-teal);
+        transform: scale(1.05);
+    }
+
+    .metric-value {
+        font-size: 1.5rem;
+        font-weight: 900;
+        color: var(--quantum-teal);
+        margin-bottom: 0.25rem;
+        text-shadow: var(--hologram-glow) var(--quantum-teal);
+    }
+
+    .metric-label {
+        font-size: 0.75rem;
+        color: rgba(255, 255, 255, 0.6);
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
+
+    .portal-actions {
+        position: absolute;
+        top: 1rem;
+        right: 1rem;
+        display: flex;
+        gap: 0.5rem;
+        opacity: 0;
+        transition: all 0.3s ease;
+        z-index: 3;
+    }
+
+    .category-portal:hover .portal-actions {
+        opacity: 1;
+    }
+
+    .quantum-action-btn {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        border: none;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1rem;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        backdrop-filter: blur(20px);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .quantum-action-btn::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: currentColor;
+        opacity: 0.1;
+        border-radius: 50%;
+        transition: opacity 0.3s ease;
+    }
+
+    .quantum-action-btn:hover::before {
+        opacity: 0.2;
+    }
+
+    .action-view {
+        background: rgba(20, 184, 166, 0.2);
+        color: var(--quantum-teal);
+        border: 1px solid var(--quantum-teal);
+    }
+
+    .action-edit {
+        background: rgba(245, 158, 11, 0.2);
+        color: var(--quantum-amber);
+        border: 1px solid var(--quantum-amber);
+    }
+
+    .action-delete {
+        background: rgba(244, 63, 94, 0.2);
+        color: var(--quantum-rose);
+        border: 1px solid var(--quantum-rose);
+    }
+
+    .quantum-action-btn:hover {
+        transform: scale(1.2) rotate(15deg);
+        box-shadow: var(--hologram-glow) currentColor;
+    }
+
+    .dimensional-table-container {
+        background: var(--cosmic-surface);
+        backdrop-filter: blur(25px);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 30px;
+        padding: 2.5rem;
+        position: relative;
+        overflow: hidden;
+        z-index: 10;
+    }
+
+    .dimensional-table-container::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 3px;
+        background: linear-gradient(90deg, var(--quantum-teal), var(--quantum-violet), var(--quantum-rose), var(--quantum-teal));
+        animation: borderPulse 4s linear infinite;
+    }
+
+    @keyframes borderPulse {
+        0% { transform: translateX(-100%); }
+        100% { transform: translateX(100%); }
+    }
+
+    .table-header-dimensional {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 2.5rem;
+        padding-bottom: 1.5rem;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .table-title-dimensional {
+        font-size: 2rem;
+        font-weight: 800;
+        color: var(--quantum-violet);
+        text-shadow: var(--hologram-glow) var(--quantum-violet);
+        margin: 0;
+    }
+
+    .dimensional-view-toggle {
+        display: flex;
+        background: rgba(255, 255, 255, 0.03);
+        border-radius: 20px;
+        padding: 0.5rem;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .dimensional-toggle-btn {
+        padding: 1rem 2rem;
+        border: none;
+        background: transparent;
+        color: rgba(255, 255, 255, 0.6);
+        border-radius: 15px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
+
+    .dimensional-toggle-btn.active {
+        background: linear-gradient(135deg, var(--quantum-teal), var(--quantum-violet));
+        color: white;
+        box-shadow: var(--hologram-glow) var(--quantum-teal);
+    }
+
+    .dimensional-table {
+        width: 100%;
+        border-collapse: separate;
+        border-spacing: 0 1.5rem;
+    }
+
+    .dimensional-table th {
+        color: var(--quantum-teal);
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 2px;
+        padding: 1.5rem;
+        text-align: left;
+        border-bottom: 3px solid var(--quantum-teal);
+        text-shadow: var(--hologram-glow) var(--quantum-teal);
+        font-size: 0.9rem;
+    }
+
+    .dimensional-table td {
+        padding: 2rem 1.5rem;
+        background: rgba(255, 255, 255, 0.02);
+        border: 1px solid rgba(255, 255, 255, 0.05);
+        transition: all 0.4s ease;
+        color: white;
+        font-size: 1rem;
+    }
+
+    .dimensional-table tr:hover td {
+        background: rgba(20, 184, 166, 0.08);
+        border-color: var(--quantum-teal);
+        transform: scale(1.01);
+        box-shadow: 0 8px 25px rgba(20, 184, 166, 0.15);
+    }
+
+    .dimensional-table td:first-child {
+        border-radius: 20px 0 0 20px;
+    }
+
+    .dimensional-table td:last-child {
+        border-radius: 0 20px 20px 0;
+    }
+
+    .category-link-dimensional {
+        color: var(--quantum-teal);
+        text-decoration: none;
+        font-weight: 700;
+        font-size: 1.1rem;
+        transition: all 0.3s ease;
+    }
+
+    .category-link-dimensional:hover {
+        color: var(--quantum-violet);
+        text-shadow: var(--hologram-glow) var(--quantum-violet);
+    }
+
+    .empty-dimension {
+        text-align: center;
+        padding: 5rem;
+        color: rgba(255, 255, 255, 0.4);
+    }
+
+    .empty-dimension-icon {
+        font-size: 6rem;
+        margin-bottom: 2rem;
+        opacity: 0.2;
+        animation: emptyDimensionFloat 4s ease-in-out infinite;
+    }
+
+    @keyframes emptyDimensionFloat {
+        0%, 100% { transform: translateY(0px) rotate(0deg); }
+        50% { transform: translateY(-15px) rotate(10deg); }
+    }
+
+    .create-category-btn {
+        background: linear-gradient(135deg, var(--quantum-violet), var(--quantum-rose));
+        border: none;
+        border-radius: 20px;
+        padding: 1.5rem 3rem;
+        color: white;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 2px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        box-shadow: var(--hologram-glow) var(--quantum-violet);
+        margin-top: 2rem;
+        font-size: 1rem;
+    }
+
+    .create-category-btn:hover {
+        transform: translateY(-5px) scale(1.05);
+        box-shadow: 0 15px 40px rgba(139, 92, 246, 0.4);
+        filter: brightness(1.2);
+    }
+
+    @media (max-width: 768px) {
+        .category-portal-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .dimensional-title {
+            font-size: 2.5rem;
+        }
+
+        .table-header-dimensional {
+            flex-direction: column;
+            gap: 1rem;
+            align-items: stretch;
+        }
+
+        .dimensional-view-toggle {
+            justify-content: center;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="holographic-grid"></div>
+
+<div class="category-dimension">
+    <!-- Dimensional Header -->
+    <div class="dimensional-header">
+        <h1 class="dimensional-title">CATEGORY NEXUS</h1>
+        <p style="color: rgba(255, 255, 255, 0.7); font-size: 1.2rem; margin-bottom: 2rem;">
+            Navigate through dimensional product categories
+        </p>
+        <a href="{% url 'dashboard:category_create' %}" class="create-category-btn">
+            <i class="fas fa-plus me-2"></i>Create New Dimension
+        </a>
+    </div>
+
+    <!-- Category Portal Grid -->
+    <div class="category-portal-grid">
+        {% for category in categories %}
+        <div class="category-portal">
+            <div class="portal-actions">
+                <button class="quantum-action-btn action-view" onclick="location.href='{% url 'dashboard:category_detail' category.id %}'">
+                    <i class="fas fa-eye"></i>
+                </button>
+                <button class="quantum-action-btn action-edit" onclick="location.href='{% url 'dashboard:category_update' category.id %}'">
+                    <i class="fas fa-edit"></i>
+                </button>
+                <button class="quantum-action-btn action-delete" onclick="location.href='{% url 'dashboard:category_delete' category.id %}'">
+                    <i class="fas fa-trash"></i>
+                </button>
+            </div>
+
+            <div class="portal-header">
+                <div class="portal-icon-sphere">
+                    <i class="fas fa-{% cycle 'tshirt' 'shoe-prints' 'hat-cowboy' 'glasses' 'ring' 'watch' %} portal-icon"></i>
+                </div>
+            </div>
+
+            <div class="portal-content">
+                <h3>
+                    <a href="{% url 'dashboard:category_detail' category.id %}" class="portal-name">
+                        {{ category.name }}
+                    </a>
+                </h3>
+
+                <p class="portal-description">
+                    {{ category.description|truncatechars:120|default:"Explore this dimensional category realm" }}
+                </p>
+
+                <div class="portal-metrics">
+                    <div class="metric-orb">
+                        <div class="metric-value">{{ category.product_set.count }}</div>
+                        <div class="metric-label">Products</div>
+                    </div>
+                    <div class="metric-orb">
+                        <div class="metric-value">${{ category.total_value|default:"0"|floatformat:0 }}</div>
+                        <div class="metric-label">Value</div>
+                    </div>
+                    <div class="metric-orb">
+                        <div class="metric-value">{{ category.avg_price|default:"0"|floatformat:0 }}%</div>
+                        <div class="metric-label">Growth</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <div class="col-12">
+            <div class="empty-dimension">
+                <i class="fas fa-satellite-dish empty-dimension-icon"></i>
+                <h3 style="color: white; margin-bottom: 1rem;">No Dimensional Categories Found</h3>
+                <p>Create your first category to establish new product dimensions</p>
+                <a href="{% url 'dashboard:category_create' %}" class="create-category-btn">
+                    <i class="fas fa-plus me-2"></i>Initialize First Dimension
+                </a>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- Dimensional Table Container -->
+    <div class="dimensional-table-container">
+        <div class="table-header-dimensional">
+            <h3 class="table-title-dimensional">Category Matrix</h3>
+            <div class="dimensional-view-toggle">
+                <button class="dimensional-toggle-btn active">
+                    <i class="fas fa-th-large me-2"></i>Portal View
+                </button>
+                <button class="dimensional-toggle-btn">
+                    <i class="fas fa-list me-2"></i>Matrix View
+                </button>
+            </div>
+        </div>
+
+        <div style="overflow-x: auto;">
+            <table class="dimensional-table">
+                <thead>
+                    <tr>
+                        <th>Category Entity</th>
+                        <th>Description</th>
+                        <th>Product Count</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for category in categories %}
+                    <tr>
+                        <td>
+                            <a href="{% url 'dashboard:category_detail' category.id %}" class="category-link-dimensional">
+                                {{ category.name }}
+                            </a>
+                        </td>
+                        <td style="color: rgba(255, 255, 255, 0.7);">
+                            {{ category.description|truncatechars:80|default:"No description available" }}
+                        </td>
+                        <td style="color: var(--quantum-emerald); font-weight: 600;">
+                            {{ category.product_set.count }}
+                        </td>
+                        <td>
+                            <div style="display: flex; gap: 0.5rem;">
+                                <button class="quantum-action-btn action-view" onclick="location.href='{% url 'dashboard:category_detail' category.id %}'">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                                <button class="quantum-action-btn action-edit" onclick="location.href='{% url 'dashboard:category_update' category.id %}'">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                                <button class="quantum-action-btn action-delete" onclick="location.href='{% url 'dashboard:category_delete' category.id %}'">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // View toggle functionality
+    const toggleBtns = document.querySelectorAll('.dimensional-toggle-btn');
+    const portalGrid = document.querySelector('.category-portal-grid');
+    const tableContainer = document.querySelector('.dimensional-table-container table').parentElement;
+
+    toggleBtns.forEach(btn => {
+        btn.addEventListener('click', function() {
+            toggleBtns.forEach(b => b.classList.remove('active'));
+            this.classList.add('active');
+
+            const isPortalView = this.textContent.includes('Portal');
+
+            if (isPortalView) {
+                portalGrid.style.display = 'grid';
+                tableContainer.style.display = 'none';
+            } else {
+                portalGrid.style.display = 'none';
+                tableContainer.style.display = 'block';
+            }
+        });
+    });
+
+    // Enhanced portal effects
+    document.querySelectorAll('.category-portal').forEach((portal, index) => {
+        portal.style.animationDelay = `${index * 0.15}s`;
+
+        // 3D hover effect
+        portal.addEventListener('mouseenter', function() {
+            this.style.transform = 'translateY(-25px) rotateX(15deg) rotateY(5deg) scale(1.02)';
+            this.style.zIndex = '20';
+        });
+
+        portal.addEventListener('mouseleave', function() {
+            this.style.transform = 'translateY(0) rotateX(0) rotateY(0) scale(1)';
+            this.style.zIndex = '1';
+        });
+
+        // Mouse tracking effect
+        portal.addEventListener('mousemove', function(e) {
+            const rect = this.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+            const centerX = rect.width / 2;
+            const centerY = rect.height / 2;
+
+            const rotateX = (y - centerY) / 10;
+            const rotateY = (centerX - x) / 10;
+
+            this.style.transform = `translateY(-25px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale(1.02)`;
+        });
+    });
+
+    // Metric orb animations
+    document.querySelectorAll('.metric-orb').forEach(orb => {
+        orb.addEventListener('mouseenter', function() {
+            this.style.transform = 'scale(1.1) rotateY(10deg)';
+        });
+
+        orb.addEventListener('mouseleave', function() {
+            this.style.transform = 'scale(1) rotateY(0deg)';
+        });
+    });
+
+    // Quantum action button effects
+    document.querySelectorAll('.quantum-action-btn').forEach(btn => {
+        btn.addEventListener('mouseenter', function() {
+            this.style.transform = 'scale(1.3) rotate(20deg)';
+        });
+
+        btn.addEventListener('mouseleave', function() {
+            this.style.transform = 'scale(1) rotate(0deg)';
+        });
+    });
+
+    // Add dynamic background particles
+    function createDimensionalParticle() {
+        const particle = document.createElement('div');
+        particle.style.position = 'fixed';
+        particle.style.width = '3px';
+        particle.style.height = '3px';
+        particle.style.background = '#14b8a6';
+        particle.style.borderRadius = '50%';
+        particle.style.pointerEvents = 'none';
+        particle.style.zIndex = '2';
+        particle.style.left = Math.random() * 100 + '%';
+        particle.style.top = '100%';
+        particle.style.boxShadow = '0 0 10px #14b8a6';
+
+        document.body.appendChild(particle);
+
+        const animation = particle.animate([
+            { transform: 'translateY(0px)', opacity: 0 },
+            { transform: 'translateY(-100vh)', opacity: 1 },
+            { transform: 'translateY(-200vh)', opacity: 0 }
+        ], {
+            duration: Math.random() * 3000 + 2000,
+            easing: 'linear'
+        });
+
+        animation.onfinish = () => particle.remove();
+    }
+
+    // Create particles periodically
+    setInterval(createDimensionalParticle, 1500);
+});
+</script>
+{% endblock %}

@@ -1,0 +1,724 @@
+{% extends 'base.html' %}
+
+{% block title %}Products - Clothing Store CRM{% endblock %}
+
+{% block extra_css %}
+<style>
+    :root {
+        --cyber-blue: #00d4ff;
+        --cyber-purple: #8b5cf6;
+        --cyber-pink: #ec4899;
+        --cyber-green: #10b981;
+        --cyber-orange: #f59e0b;
+        --dark-void: #0f0f23;
+        --glass-surface: rgba(255, 255, 255, 0.03);
+        --neon-glow: 0 0 20px;
+    }
+
+    body {
+        background: radial-gradient(ellipse at center, #1a1a2e 0%, #16213e 50%, #0f0f23 100%);
+        min-height: 100vh;
+    }
+
+    .products-universe {
+        padding: 2rem;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .cosmic-header {
+        text-align: center;
+        margin-bottom: 3rem;
+        position: relative;
+    }
+
+    .cosmic-title {
+        font-size: 3.5rem;
+        font-weight: 900;
+        background: linear-gradient(45deg, var(--cyber-blue), var(--cyber-purple), var(--cyber-pink));
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        margin-bottom: 1rem;
+        animation: titleShimmer 3s ease-in-out infinite;
+    }
+
+    @keyframes titleShimmer {
+        0%, 100% { filter: brightness(1) hue-rotate(0deg); }
+        50% { filter: brightness(1.3) hue-rotate(90deg); }
+    }
+
+    .quantum-search-panel {
+        background: var(--glass-surface);
+        backdrop-filter: blur(20px);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 25px;
+        padding: 2rem;
+        margin-bottom: 3rem;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .quantum-search-panel::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 2px;
+        background: linear-gradient(90deg, transparent, var(--cyber-blue), transparent);
+        animation: scanLine 3s linear infinite;
+    }
+
+    @keyframes scanLine {
+        0% { left: -100%; }
+        100% { left: 100%; }
+    }
+
+    .search-matrix {
+        display: grid;
+        grid-template-columns: 2fr 1fr 1fr auto;
+        gap: 1.5rem;
+        align-items: end;
+    }
+
+    .quantum-input-group {
+        position: relative;
+    }
+
+    .quantum-input {
+        width: 100%;
+        padding: 1rem 1rem 1rem 3rem;
+        background: rgba(0, 212, 255, 0.1);
+        border: 2px solid transparent;
+        border-radius: 15px;
+        color: white;
+        font-size: 1rem;
+        transition: all 0.3s ease;
+        backdrop-filter: blur(10px);
+    }
+
+    .quantum-input:focus {
+        outline: none;
+        border-color: var(--cyber-blue);
+        box-shadow: var(--neon-glow) var(--cyber-blue);
+        background: rgba(0, 212, 255, 0.2);
+    }
+
+    .input-icon {
+        position: absolute;
+        left: 1rem;
+        top: 50%;
+        transform: translateY(-50%);
+        color: var(--cyber-blue);
+        font-size: 1.2rem;
+    }
+
+    .quantum-select {
+        padding: 1rem;
+        background: rgba(139, 92, 246, 0.1);
+        border: 2px solid transparent;
+        border-radius: 15px;
+        color: white;
+        font-size: 1rem;
+        transition: all 0.3s ease;
+        backdrop-filter: blur(10px);
+    }
+
+    .quantum-select:focus {
+        outline: none;
+        border-color: var(--cyber-purple);
+        box-shadow: var(--neon-glow) var(--cyber-purple);
+    }
+
+    .quantum-btn {
+        padding: 1rem 2rem;
+        background: linear-gradient(135deg, var(--cyber-blue), var(--cyber-purple));
+        border: none;
+        border-radius: 15px;
+        color: white;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .quantum-btn::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+        transition: left 0.5s ease;
+    }
+
+    .quantum-btn:hover::before {
+        left: 100%;
+    }
+
+    .quantum-btn:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 10px 30px rgba(0, 212, 255, 0.4);
+    }
+
+    .products-constellation {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+        gap: 2rem;
+        margin-bottom: 3rem;
+    }
+
+    .product-nebula {
+        background: var(--glass-surface);
+        backdrop-filter: blur(20px);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 25px;
+        overflow: hidden;
+        position: relative;
+        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        cursor: pointer;
+        height: 100%;
+    }
+
+    .product-nebula::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: linear-gradient(135deg, var(--cyber-blue), var(--cyber-purple), var(--cyber-pink));
+        opacity: 0;
+        transition: opacity 0.3s ease;
+        z-index: 1;
+    }
+
+    .product-nebula:hover {
+        transform: translateY(-20px) rotateX(10deg);
+        box-shadow: 0 25px 50px rgba(0, 212, 255, 0.3);
+        border-color: var(--cyber-blue);
+    }
+
+    .product-nebula:hover::before {
+        opacity: 0.1;
+    }
+
+    .product-cosmos {
+        height: 200px;
+        background: linear-gradient(135deg, var(--cyber-blue), var(--cyber-purple));
+        position: relative;
+        overflow: hidden;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .product-cosmos::after {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grid" width="10" height="10" patternUnits="userSpaceOnUse"><path d="M 10 0 L 0 0 0 10" fill="none" stroke="rgba(255,255,255,0.1)" stroke-width="0.5"/></pattern></defs><rect width="100" height="100" fill="url(%23grid)"/></svg>');
+        animation: gridMove 20s linear infinite;
+    }
+
+    @keyframes gridMove {
+        0% { transform: translate(0, 0); }
+        100% { transform: translate(10px, 10px); }
+    }
+
+    .product-icon {
+        font-size: 4rem;
+        color: white;
+        z-index: 2;
+        position: relative;
+        animation: productFloat 4s ease-in-out infinite;
+    }
+
+    @keyframes productFloat {
+        0%, 100% { transform: translateY(0px) rotate(0deg); }
+        50% { transform: translateY(-10px) rotate(5deg); }
+    }
+
+    .quantum-status {
+        position: absolute;
+        top: 1rem;
+        right: 1rem;
+        padding: 0.5rem 1rem;
+        border-radius: 20px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        z-index: 3;
+        backdrop-filter: blur(10px);
+    }
+
+    .status-in-stock {
+        background: rgba(16, 185, 129, 0.3);
+        color: var(--cyber-green);
+        border: 1px solid var(--cyber-green);
+        box-shadow: var(--neon-glow) var(--cyber-green);
+    }
+
+    .status-low-stock {
+        background: rgba(245, 158, 11, 0.3);
+        color: var(--cyber-orange);
+        border: 1px solid var(--cyber-orange);
+        box-shadow: var(--neon-glow) var(--cyber-orange);
+    }
+
+    .status-out-stock {
+        background: rgba(239, 68, 68, 0.3);
+        color: #ef4444;
+        border: 1px solid #ef4444;
+        box-shadow: var(--neon-glow) #ef4444;
+    }
+
+    .product-data {
+        padding: 2rem;
+        position: relative;
+        z-index: 2;
+    }
+
+    .product-name {
+        font-size: 1.25rem;
+        font-weight: 700;
+        color: white;
+        margin-bottom: 0.5rem;
+        text-decoration: none;
+        transition: all 0.3s ease;
+    }
+
+    .product-name:hover {
+        color: var(--cyber-blue);
+        text-shadow: var(--neon-glow) var(--cyber-blue);
+    }
+
+    .product-category {
+        color: rgba(255, 255, 255, 0.6);
+        font-size: 0.875rem;
+        margin-bottom: 1rem;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
+
+    .product-metrics {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-top: 1.5rem;
+    }
+
+    .product-price {
+        font-size: 1.5rem;
+        font-weight: 900;
+        color: var(--cyber-blue);
+        text-shadow: var(--neon-glow) var(--cyber-blue);
+    }
+
+    .product-stock {
+        color: rgba(255, 255, 255, 0.7);
+        font-size: 0.875rem;
+    }
+
+    .quantum-actions {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        opacity: 0;
+        transition: all 0.3s ease;
+        z-index: 4;
+        display: flex;
+        gap: 0.5rem;
+    }
+
+    .product-nebula:hover .quantum-actions {
+        opacity: 1;
+    }
+
+    .action-orb {
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        border: none;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.2rem;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        backdrop-filter: blur(20px);
+    }
+
+    .action-view {
+        background: rgba(0, 212, 255, 0.3);
+        color: var(--cyber-blue);
+        border: 1px solid var(--cyber-blue);
+    }
+
+    .action-edit {
+        background: rgba(245, 158, 11, 0.3);
+        color: var(--cyber-orange);
+        border: 1px solid var(--cyber-orange);
+    }
+
+    .action-delete {
+        background: rgba(239, 68, 68, 0.3);
+        color: #ef4444;
+        border: 1px solid #ef4444;
+    }
+
+    .action-orb:hover {
+        transform: scale(1.2) rotate(10deg);
+        box-shadow: var(--neon-glow) currentColor;
+    }
+
+    .quantum-table-container {
+        background: var(--glass-surface);
+        backdrop-filter: blur(20px);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 25px;
+        padding: 2rem;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .table-header-quantum {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 2rem;
+        padding-bottom: 1rem;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .view-toggle {
+        display: flex;
+        background: rgba(255, 255, 255, 0.05);
+        border-radius: 15px;
+        padding: 0.25rem;
+    }
+
+    .toggle-btn {
+        padding: 0.75rem 1.5rem;
+        border: none;
+        background: transparent;
+        color: rgba(255, 255, 255, 0.6);
+        border-radius: 12px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        font-weight: 500;
+    }
+
+    .toggle-btn.active {
+        background: linear-gradient(135deg, var(--cyber-blue), var(--cyber-purple));
+        color: white;
+        box-shadow: var(--neon-glow) var(--cyber-blue);
+    }
+
+    .quantum-table {
+        width: 100%;
+        border-collapse: separate;
+        border-spacing: 0 1rem;
+    }
+
+    .quantum-table th {
+        color: var(--cyber-blue);
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        padding: 1rem;
+        text-align: left;
+        border-bottom: 2px solid var(--cyber-blue);
+        text-shadow: var(--neon-glow) var(--cyber-blue);
+    }
+
+    .quantum-table td {
+        padding: 1.5rem 1rem;
+        background: rgba(255, 255, 255, 0.02);
+        border: 1px solid rgba(255, 255, 255, 0.05);
+        transition: all 0.3s ease;
+        color: white;
+    }
+
+    .quantum-table tr:hover td {
+        background: rgba(0, 212, 255, 0.1);
+        border-color: var(--cyber-blue);
+        transform: scale(1.01);
+        box-shadow: 0 5px 15px rgba(0, 212, 255, 0.2);
+    }
+
+    .quantum-table td:first-child {
+        border-radius: 15px 0 0 15px;
+    }
+
+    .quantum-table td:last-child {
+        border-radius: 0 15px 15px 0;
+    }
+
+    .empty-cosmos {
+        text-align: center;
+        padding: 4rem;
+        color: rgba(255, 255, 255, 0.5);
+    }
+
+    .empty-icon {
+        font-size: 5rem;
+        margin-bottom: 2rem;
+        opacity: 0.3;
+        animation: emptyPulse 3s ease-in-out infinite;
+    }
+
+    @keyframes emptyPulse {
+        0%, 100% { transform: scale(1); opacity: 0.3; }
+        50% { transform: scale(1.1); opacity: 0.6; }
+    }
+
+    @media (max-width: 768px) {
+        .search-matrix {
+            grid-template-columns: 1fr;
+            gap: 1rem;
+        }
+
+        .products-constellation {
+            grid-template-columns: 1fr;
+        }
+
+        .cosmic-title {
+            font-size: 2.5rem;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="products-universe">
+    <!-- Cosmic Header -->
+    <div class="cosmic-header">
+        <h1 class="cosmic-title">PRODUCT NEXUS</h1>
+        <p style="color: rgba(255, 255, 255, 0.7); font-size: 1.1rem;">Navigate through your digital inventory</p>
+    </div>
+
+    <!-- Quantum Search Panel -->
+    <div class="quantum-search-panel">
+        <form method="get">
+            <div class="search-matrix">
+                <div class="quantum-input-group">
+                    <i class="fas fa-search input-icon"></i>
+                    <input type="text" class="quantum-input" name="search"
+                           placeholder="Search the product matrix..."
+                           value="{{ request.GET.search|default:'' }}">
+                </div>
+
+                <select class="quantum-select" name="category">
+                    <option value="">All Dimensions</option>
+                    {% for category in all_categories %}
+                    <option value="{{ category.id }}" {% if request.GET.category == category.id|stringformat:"i" %}selected{% endif %}>
+                        {{ category.name }}
+                    </option>
+                    {% endfor %}
+                </select>
+
+                <select class="quantum-select" name="sort">
+                    <option value="name" {% if request.GET.sort == 'name' or not request.GET.sort %}selected{% endif %}>Name ↑</option>
+                    <option value="-name" {% if request.GET.sort == '-name' %}selected{% endif %}>Name ↓</option>
+                    <option value="price" {% if request.GET.sort == 'price' %}selected{% endif %}>Price ↑</option>
+                    <option value="-price" {% if request.GET.sort == '-price' %}selected{% endif %}>Price ↓</option>
+                    <option value="-stock" {% if request.GET.sort == '-stock' %}selected{% endif %}>Stock ↓</option>
+                    <option value="stock" {% if request.GET.sort == 'stock' %}selected{% endif %}>Stock ↑</option>
+                </select>
+
+                <button type="submit" class="quantum-btn">
+                    <i class="fas fa-filter me-2"></i>SCAN
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Products Constellation -->
+    <div class="products-constellation">
+        {% for product in products %}
+        <div class="product-nebula">
+            <div class="product-cosmos">
+                <i class="fas fa-tshirt product-icon"></i>
+                <div class="quantum-status {% if product.stock > 10 %}status-in-stock{% elif product.stock > 0 %}status-low-stock{% else %}status-out-stock{% endif %}">
+                    {% if product.stock > 10 %}OPTIMAL{% elif product.stock > 0 %}LOW{% else %}DEPLETED{% endif %}
+                </div>
+                <div class="quantum-actions">
+                    <button class="action-orb action-view" onclick="location.href='{% url 'dashboard:product_detail' product.id %}'">
+                        <i class="fas fa-eye"></i>
+                    </button>
+                    <button class="action-orb action-edit" onclick="location.href='{% url 'dashboard:product_update' product.id %}'">
+                        <i class="fas fa-edit"></i>
+                    </button>
+                    <button class="action-orb action-delete" onclick="location.href='{% url 'dashboard:product_delete' product.id %}'">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </div>
+            </div>
+
+            <div class="product-data">
+                <h3>
+                    <a href="{% url 'dashboard:product_detail' product.id %}" class="product-name">
+                        {{ product.name }}
+                    </a>
+                </h3>
+                <p class="product-category">{{ product.category.name }}</p>
+
+                <div class="product-metrics">
+                    <span class="product-price">${{ product.price|floatformat:2 }}</span>
+                    <span class="product-stock">{{ product.stock }} units</span>
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <div class="col-12">
+            <div class="empty-cosmos">
+                <i class="fas fa-satellite empty-icon"></i>
+                <h3 style="color: white; margin-bottom: 1rem;">No Products in This Dimension</h3>
+                <p>Adjust your search parameters to explore different product realms</p>
+                <a href="{% url 'dashboard:product_create' %}" class="quantum-btn" style="margin-top: 2rem;">
+                    <i class="fas fa-plus me-2"></i>Create New Product
+                </a>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- Quantum Table Container -->
+    <div class="quantum-table-container">
+        <div class="table-header-quantum">
+            <h3 style="color: var(--cyber-purple); font-size: 1.5rem; margin: 0;">Product Matrix</h3>
+            <div class="view-toggle">
+                <button class="toggle-btn active">
+                    <i class="fas fa-th-large me-2"></i>Constellation
+                </button>
+                <button class="toggle-btn">
+                    <i class="fas fa-list me-2"></i>Matrix
+                </button>
+            </div>
+        </div>
+
+        <div style="overflow-x: auto;">
+            <table class="quantum-table">
+                <thead>
+                    <tr>
+                        <th>Product Entity</th>
+                        <th>Category</th>
+                        <th>Value</th>
+                        <th>Inventory</th>
+                        <th>Status</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for product in products %}
+                    <tr>
+                        <td>
+                            <a href="{% url 'dashboard:product_detail' product.id %}" style="color: var(--cyber-blue); text-decoration: none; font-weight: 600;">
+                                {{ product.name }}
+                            </a>
+                        </td>
+                        <td style="color: rgba(255, 255, 255, 0.7);">{{ product.category.name }}</td>
+                        <td style="color: var(--cyber-green); font-weight: 600;">${{ product.price|floatformat:2 }}</td>
+                        <td style="color: rgba(255, 255, 255, 0.7);">{{ product.stock }}</td>
+                        <td>
+                            <span class="quantum-status {% if product.stock > 10 %}status-in-stock{% elif product.stock > 0 %}status-low-stock{% else %}status-out-stock{% endif %}">
+                                {% if product.stock > 10 %}OPTIMAL{% elif product.stock > 0 %}LOW{% else %}DEPLETED{% endif %}
+                            </span>
+                        </td>
+                        <td>
+                            <div style="display: flex; gap: 0.5rem;">
+                                <button class="action-orb action-view" onclick="location.href='{% url 'dashboard:product_detail' product.id %}'">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                                <button class="action-orb action-edit" onclick="location.href='{% url 'dashboard:product_update' product.id %}'">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                                <button class="action-orb action-delete" onclick="location.href='{% url 'dashboard:product_delete' product.id %}'">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // View toggle functionality
+    const toggleBtns = document.querySelectorAll('.toggle-btn');
+    const constellation = document.querySelector('.products-constellation');
+    const tableContainer = document.querySelector('.quantum-table-container table').parentElement;
+
+    toggleBtns.forEach(btn => {
+        btn.addEventListener('click', function() {
+            toggleBtns.forEach(b => b.classList.remove('active'));
+            this.classList.add('active');
+
+            const isConstellation = this.textContent.includes('Constellation');
+
+            if (isConstellation) {
+                constellation.style.display = 'grid';
+                tableContainer.style.display = 'none';
+            } else {
+                constellation.style.display = 'none';
+                tableContainer.style.display = 'block';
+            }
+        });
+    });
+
+    // Enhanced hover effects
+    document.querySelectorAll('.product-nebula').forEach((nebula, index) => {
+        nebula.style.animationDelay = `${index * 0.1}s`;
+
+        nebula.addEventListener('mouseenter', function() {
+            this.style.transform = 'translateY(-20px) rotateX(10deg) scale(1.02)';
+            this.style.zIndex = '10';
+        });
+
+        nebula.addEventListener('mouseleave', function() {
+            this.style.transform = 'translateY(0) rotateX(0) scale(1)';
+            this.style.zIndex = '1';
+        });
+    });
+
+    // Quantum input effects
+    document.querySelectorAll('.quantum-input, .quantum-select').forEach(input => {
+        input.addEventListener('focus', function() {
+            this.parentElement.style.transform = 'scale(1.02)';
+        });
+
+        input.addEventListener('blur', function() {
+            this.parentElement.style.transform = 'scale(1)';
+        });
+    });
+
+    // Action orb effects
+    document.querySelectorAll('.action-orb').forEach(orb => {
+        orb.addEventListener('mouseenter', function() {
+            this.style.transform = 'scale(1.3) rotate(15deg)';
+        });
+
+        orb.addEventListener('mouseleave', function() {
+            this.style.transform = 'scale(1) rotate(0deg)';
+        });
+    });
+});
+</script>
+{% endblock %}

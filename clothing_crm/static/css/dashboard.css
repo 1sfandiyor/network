@@ -1,0 +1,42 @@
+/* static/css/dashboard.css */
+.stat-card {
+    transition: all 0.3s;
+    border-radius: 0.5rem;
+    background-color: #1a1a1a; /* Qora fon */
+    color: #ff99cc; /* Pushti matn */
+    border: 1px solid #ff66b2; /* Pushti chegara */
+}
+
+.stat-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 0.5rem 1rem rgba(255, 102, 178, 0.3); /* Pushti soya */
+    background-color: #262626; /* Hoverda biroz ochiqroq qora */
+}
+
+.chart-container {
+    position: relative;
+    min-height: 300px;
+    background-color: #1a1a1a; /* Qora fon */
+}
+
+.no-data-message {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    text-align: center;
+    color: #ff99cc; /* Pushti matn */
+}
+
+.table-responsive {
+    min-height: 300px;
+    background-color: #1a1a1a; /* Qora fon */
+    color: #ff99cc; /* Pushti matn */
+}
+
+.badge {
+    padding: 0.5em 0.75em;
+    font-weight: 500;
+    background-color: #ff66b2; /* Pushti fon */
+    color: #1a1a1a; /* Qora matn */
+}

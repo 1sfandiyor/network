@@ -1,0 +1,577 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+
+{% block title %}{% if customer %}Edit{% else %}Add{% endif %} Customer - Clothing Store CRM{% endblock %}
+
+{% block extra_css %}
+<style>
+    .form-container {
+        background: var(--dark-surface);
+        border: 1px solid var(--dark-border);
+        border-radius: 20px;
+        padding: 2rem;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .form-container::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: var(--gradient-success);
+    }
+
+    .form-header {
+        text-align: center;
+        margin-bottom: 2rem;
+    }
+
+    .form-title {
+        font-size: 2.5rem;
+        font-weight: 700;
+        background: var(--gradient-success);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        margin-bottom: 0.5rem;
+    }
+
+    .form-subtitle {
+        color: var(--text-secondary);
+        font-size: 1.1rem;
+    }
+
+    .customer-avatar-preview {
+        width: 120px;
+        height: 120px;
+        border-radius: 50%;
+        background: var(--gradient-success);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 3rem;
+        font-weight: 700;
+        margin: 0 auto 2rem;
+        transition: all 0.3s ease;
+        cursor: pointer;
+    }
+
+    .customer-avatar-preview:hover {
+        transform: scale(1.05);
+        box-shadow: 0 0 30px rgba(16, 185, 129, 0.5);
+    }
+
+    .form-section {
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid var(--dark-border);
+        border-radius: 16px;
+        padding: 2rem;
+        margin-bottom: 2rem;
+        transition: all 0.3s ease;
+    }
+
+    .form-section:hover {
+        background: rgba(255, 255, 255, 0.08);
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-lg);
+    }
+
+    .section-title {
+        color: var(--text-primary);
+        font-size: 1.25rem;
+        font-weight: 600;
+        margin-bottom: 1.5rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .section-icon {
+        font-size: 1.5rem;
+        background: var(--gradient-success);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+
+    .form-group {
+        margin-bottom: 1.5rem;
+        position: relative;
+    }
+
+    .form-label {
+        color: var(--text-primary);
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+        display: block;
+        font-size: 0.875rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .form-control, .form-select {
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid var(--dark-border);
+        color: var(--text-primary);
+        border-radius: 12px;
+        padding: 1rem;
+        transition: all 0.3s ease;
+        font-size: 1rem;
+    }
+
+    .form-control:focus, .form-select:focus {
+        background: rgba(255, 255, 255, 0.1);
+        border-color: var(--primary-color);
+        box-shadow: 0 0 0 0.2rem rgba(16, 185, 129, 0.25);
+        color: var(--text-primary);
+        transform: translateY(-2px);
+    }
+
+    .form-control::placeholder {
+        color: var(--text-muted);
+    }
+
+    .form-text {
+        color: var(--text-muted);
+        font-size: 0.875rem;
+        margin-top: 0.5rem;
+    }
+
+    .input-icon {
+        position: absolute;
+        left: 1rem;
+        top: 50%;
+        transform: translateY(-50%);
+        color: var(--text-muted);
+        z-index: 2;
+    }
+
+    .input-with-icon .form-control {
+        padding-left: 3rem;
+    }
+
+    .form-actions {
+        display: flex;
+        gap: 1rem;
+        justify-content: center;
+        margin-top: 3rem;
+        flex-wrap: wrap;
+    }
+
+    .btn-submit {
+        background: var(--gradient-success);
+        color: white;
+        border: none;
+        border-radius: 12px;
+        padding: 1rem 3rem;
+        font-weight: 600;
+        font-size: 1.1rem;
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+        cursor: pointer;
+    }
+
+    .btn-submit::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+        transition: left 0.5s ease;
+    }
+
+    .btn-submit:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(16, 185, 129, 0.6);
+    }
+
+    .btn-submit:hover::before {
+        left: 100%;
+    }
+
+    .btn-cancel {
+        background: rgba(255, 255, 255, 0.1);
+        color: var(--text-secondary);
+        border: 1px solid var(--dark-border);
+        border-radius: 12px;
+        padding: 1rem 2rem;
+        font-weight: 600;
+        text-decoration: none;
+        transition: all 0.3s ease;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .btn-cancel:hover {
+        background: rgba(255, 255, 255, 0.2);
+        color: var(--text-primary);
+        transform: translateY(-2px);
+    }
+
+    .validation-feedback {
+        background: rgba(239, 68, 68, 0.1);
+        border: 1px solid rgba(239, 68, 68, 0.3);
+        border-radius: 8px;
+        padding: 0.75rem;
+        margin-top: 0.5rem;
+        color: #fca5a5;
+        font-size: 0.875rem;
+    }
+
+    .form-progress {
+        background: var(--dark-border);
+        height: 4px;
+        border-radius: 2px;
+        margin-bottom: 2rem;
+        overflow: hidden;
+    }
+
+    .progress-bar {
+        background: var(--gradient-success);
+        height: 100%;
+        border-radius: 2px;
+        transition: width 0.3s ease;
+    }
+
+    .customer-stats {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        gap: 1rem;
+        margin-bottom: 2rem;
+    }
+
+    .stat-preview {
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid var(--dark-border);
+        border-radius: 12px;
+        padding: 1rem;
+        text-align: center;
+        transition: all 0.3s ease;
+    }
+
+    .stat-preview:hover {
+        transform: scale(1.05);
+        background: rgba(255, 255, 255, 0.1);
+    }
+
+    .stat-number {
+        font-size: 1.25rem;
+        font-weight: 700;
+        color: var(--primary-color);
+        margin-bottom: 0.25rem;
+    }
+
+    .stat-label {
+        color: var(--text-muted);
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    @media (max-width: 768px) {
+        .form-container {
+            padding: 1.5rem;
+        }
+
+        .form-title {
+            font-size: 2rem;
+        }
+
+        .form-actions {
+            flex-direction: column;
+        }
+
+        .btn-submit, .btn-cancel {
+            width: 100%;
+            justify-content: center;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Form Progress -->
+    <div class="form-progress">
+        <div class="progress-bar" style="width: 60%;"></div>
+    </div>
+
+    <div class="form-container">
+        <!-- Form Header -->
+        <div class="form-header">
+            <div class="customer-avatar-preview" id="avatarPreview">
+                {% if customer %}
+                    {{ customer.name|first|upper }}
+                {% else %}
+                    <i class="fas fa-user"></i>
+                {% endif %}
+            </div>
+            <h1 class="form-title">
+                {% if customer %}
+                    <i class="fas fa-edit me-3"></i>Edit Customer
+                {% else %}
+                    <i class="fas fa-user-plus me-3"></i>Add New Customer
+                {% endif %}
+            </h1>
+            <p class="form-subtitle">
+                {% if customer %}
+                    Update customer information and details
+                {% else %}
+                    Add a new customer to your database
+                {% endif %}
+            </p>
+        </div>
+
+        <!-- Customer Stats (for existing customers) -->
+        {% if customer %}
+        <div class="customer-stats">
+            <div class="stat-preview">
+                <div class="stat-number">{{ customer.order_set.count }}</div>
+                <div class="stat-label">Total Orders</div>
+            </div>
+            <div class="stat-preview">
+                <div class="stat-number">${{ customer.total_spent|default:"0"|floatformat:2 }}</div>
+                <div class="stat-label">Total Spent</div>
+            </div>
+            <div class="stat-preview">
+                <div class="stat-number">{{ customer.date_created|timesince|truncatewords:1 }}</div>
+                <div class="stat-label">Member Since</div>
+            </div>
+            <div class="stat-preview">
+                <div class="stat-number">4.8</div>
+                <div class="stat-label">Rating</div>
+            </div>
+        </div>
+        {% endif %}
+
+        <form method="POST" id="customerForm">
+            {% csrf_token %}
+
+            <!-- Personal Information Section -->
+            <div class="form-section">
+                <h3 class="section-title">
+                    <i class="fas fa-user section-icon"></i>
+                    Personal Information
+                </h3>
+
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label for="{{ form.name.id_for_label }}" class="form-label">Full Name</label>
+                            <div class="input-with-icon">
+                                <i class="fas fa-user input-icon"></i>
+                                {{ form.name }}
+                            </div>
+                            <div class="form-text">Enter the customer's full name</div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label for="{{ form.email.id_for_label }}" class="form-label">Email Address</label>
+                            <div class="input-with-icon">
+                                <i class="fas fa-envelope input-icon"></i>
+                                {{ form.email }}
+                            </div>
+                            <div class="form-text">Primary email for communication</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Contact Information Section -->
+            <div class="form-section">
+                <h3 class="section-title">
+                    <i class="fas fa-phone section-icon"></i>
+                    Contact Information
+                </h3>
+
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label for="{{ form.phone.id_for_label }}" class="form-label">Phone Number</label>
+                            <div class="input-with-icon">
+                                <i class="fas fa-phone input-icon"></i>
+                                {{ form.phone }}
+                            </div>
+                            <div class="form-text">Primary contact number</div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label for="{{ form.address.id_for_label }}" class="form-label">Address</label>
+                            <div class="input-with-icon">
+                                <i class="fas fa-map-marker-alt input-icon"></i>
+                                {{ form.address }}
+                            </div>
+                            <div class="form-text">Full address for delivery</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Form Actions -->
+            <div class="form-actions">
+                <button type="submit" class="btn-submit">
+                    <i class="fas fa-save me-2"></i>
+                    {% if customer %}Update Customer{% else %}Create Customer{% endif %}
+                </button>
+                <a href="{% if customer %}{% url 'dashboard:customer_detail' customer.id %}{% else %}{% url 'dashboard:customer_list' %}{% endif %}" class="btn-cancel">
+                    <i class="fas fa-times me-2"></i>Cancel
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Form validation and enhancement
+    document.addEventListener('DOMContentLoaded', function() {
+        const form = document.getElementById('customerForm');
+        const nameInput = document.querySelector('input[name="name"]');
+        const emailInput = document.querySelector('input[name="email"]');
+        const phoneInput = document.querySelector('input[name="phone"]');
+        const avatarPreview = document.getElementById('avatarPreview');
+        const progressBar = document.querySelector('.progress-bar');
+
+        // Update avatar preview based on name
+        function updateAvatarPreview() {
+            const name = nameInput.value.trim();
+            if (name) {
+                avatarPreview.textContent = name.charAt(0).toUpperCase();
+                avatarPreview.style.background = 'var(--gradient-success)';
+            } else {
+                avatarPreview.innerHTML = '<i class="fas fa-user"></i>';
+                avatarPreview.style.background = 'var(--gradient-success)';
+            }
+        }
+
+        if (nameInput) {
+            nameInput.addEventListener('input', updateAvatarPreview);
+            updateAvatarPreview(); // Initial call
+        }
+
+        // Email validation
+        function validateEmail(email) {
+            const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            return re.test(email);
+        }
+
+        if (emailInput) {
+            emailInput.addEventListener('blur', function() {
+                const email = this.value.trim();
+                const existingFeedback = this.parentNode.parentNode.querySelector('.validation-feedback');
+
+                if (existingFeedback) {
+                    existingFeedback.remove();
+                }
+
+                if (email && !validateEmail(email)) {
+                    const feedback = document.createElement('div');
+                    feedback.className = 'validation-feedback';
+                    feedback.innerHTML = '<i class="fas fa-exclamation-triangle me-2"></i>Please enter a valid email address';
+                    this.parentNode.parentNode.appendChild(feedback);
+                    this.style.borderColor = '#ef4444';
+                } else {
+                    this.style.borderColor = 'var(--dark-border)';
+                }
+            });
+        }
+
+        // Phone number formatting
+        if (phoneInput) {
+            phoneInput.addEventListener('input', function() {
+                let value = this.value.replace(/\D/g, '');
+                if (value.length >= 6) {
+                    value = value.replace(/(\d{3})(\d{3})(\d{4})/, '($1) $2-$3');
+                } else if (value.length >= 3) {
+                    value = value.replace(/(\d{3})(\d{0,3})/, '($1) $2');
+                }
+                this.value = value;
+            });
+        }
+
+        // Form progress tracking
+        function updateProgress() {
+            const inputs = form.querySelectorAll('input[required]');
+            let filledInputs = 0;
+
+            inputs.forEach(input => {
+                if (input.value.trim() !== '') {
+                    filledInputs++;
+                }
+            });
+
+            const progress = (filledInputs / inputs.length) * 100;
+            progressBar.style.width = progress + '%';
+        }
+
+        // Track form progress
+        form.addEventListener('input', updateProgress);
+        updateProgress(); // Initial call
+
+        // Form submission
+        form.addEventListener('submit', function(e) {
+            const submitBtn = this.querySelector('.btn-submit');
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Saving...';
+            submitBtn.disabled = true;
+        });
+
+        // Form section animations
+        const sections = document.querySelectorAll('.form-section');
+        sections.forEach((section, index) => {
+            section.style.opacity = '0';
+            section.style.transform = 'translateY(20px)';
+            section.style.animation = `fadeInUp 0.6s ease forwards ${index * 0.2}s`;
+        });
+
+        // Input focus effects
+        document.querySelectorAll('.form-control').forEach(input => {
+            input.addEventListener('focus', function() {
+                this.parentElement.style.transform = 'scale(1.02)';
+                const icon = this.parentElement.querySelector('.input-icon');
+                if (icon) {
+                    icon.style.color = 'var(--primary-color)';
+                }
+            });
+
+            input.addEventListener('blur', function() {
+                this.parentElement.style.transform = 'scale(1)';
+                const icon = this.parentElement.querySelector('.input-icon');
+                if (icon) {
+                    icon.style.color = 'var(--text-muted)';
+                }
+            });
+        });
+
+        // Avatar click effect
+        avatarPreview.addEventListener('click', function() {
+            this.style.transform = 'scale(1.1) rotate(360deg)';
+            setTimeout(() => {
+                this.style.transform = 'scale(1) rotate(0deg)';
+            }, 300);
+        });
+
+        // Real-time validation feedback
+        form.addEventListener('input', function(e) {
+            const input = e.target;
+            if (input.type === 'email' && input.value) {
+                if (validateEmail(input.value)) {
+                    input.style.borderColor = '#10b981';
+                } else {
+                    input.style.borderColor = '#ef4444';
+                }
+            }
+        });
+    });
+</script>
+{% endblock %}

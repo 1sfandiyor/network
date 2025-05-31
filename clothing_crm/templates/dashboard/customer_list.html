@@ -1,0 +1,429 @@
+{% extends 'base.html' %}
+
+{% block title %}Customers - Clothing Store CRM{% endblock %}
+
+{% block extra_css %}
+<style>
+    .customer-card {
+        background: var(--dark-surface);
+        border: 1px solid var(--dark-border);
+        border-radius: 16px;
+        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .customer-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: var(--gradient-success);
+        opacity: 0;
+        transition: opacity 0.3s ease;
+        z-index: 1;
+    }
+
+    .customer-card:hover {
+        transform: translateY(-8px) scale(1.02);
+        box-shadow: var(--shadow-xl);
+        border-color: rgba(255, 255, 255, 0.3);
+    }
+
+    .customer-card:hover::before {
+        opacity: 0.1;
+    }
+
+    .customer-avatar {
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        background: var(--gradient-primary);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 1.5rem;
+        font-weight: 600;
+        margin: 0 auto 1rem;
+        position: relative;
+        z-index: 2;
+        transition: all 0.3s ease;
+    }
+
+    .customer-card:hover .customer-avatar {
+        transform: scale(1.1);
+        box-shadow: 0 0 30px rgba(37, 99, 235, 0.5);
+    }
+
+    .customer-stats {
+        display: flex;
+        justify-content: space-between;
+        margin-top: 1rem;
+        padding-top: 1rem;
+        border-top: 1px solid var(--dark-border);
+    }
+
+    .customer-stat {
+        text-align: center;
+        flex: 1;
+    }
+
+    .customer-stat-value {
+        font-size: 1.25rem;
+        font-weight: 600;
+        color: var(--primary-color);
+    }
+
+    .customer-stat-label {
+        font-size: 0.75rem;
+        color: var(--text-muted);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .search-filters {
+        background: var(--dark-surface);
+        border: 1px solid var(--dark-border);
+        border-radius: 16px;
+        padding: 1.5rem;
+        margin-bottom: 2rem;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .search-filters::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 3px;
+        background: var(--gradient-success);
+    }
+
+    .customer-actions {
+        position: absolute;
+        top: 1rem;
+        right: 1rem;
+        opacity: 0;
+        transition: all 0.3s ease;
+        z-index: 2;
+    }
+
+    .customer-card:hover .customer-actions {
+        opacity: 1;
+    }
+
+    .quick-action-btn {
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        border: none;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 0.125rem;
+        transition: all 0.3s ease;
+        font-size: 0.875rem;
+    }
+
+    .quick-action-btn:hover {
+        transform: scale(1.1) translateY(-2px);
+    }
+
+    .customer-info {
+        position: relative;
+        z-index: 2;
+    }
+
+    .customer-name {
+        color: var(--text-primary);
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+        text-decoration: none;
+        transition: color 0.3s ease;
+    }
+
+    .customer-name:hover {
+        color: var(--primary-color);
+    }
+
+    .customer-email {
+        color: var(--text-secondary);
+        font-size: 0.875rem;
+        margin-bottom: 0.25rem;
+    }
+
+    .customer-phone {
+        color: var(--text-muted);
+        font-size: 0.875rem;
+    }
+
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 1.5rem;
+        margin-bottom: 2rem;
+    }
+
+    .stat-item {
+        background: var(--dark-surface);
+        border: 1px solid var(--dark-border);
+        border-radius: 12px;
+        padding: 1.5rem;
+        text-align: center;
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .stat-item::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: var(--gradient-success);
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    }
+
+    .stat-item:hover {
+        transform: translateY(-4px);
+        box-shadow: var(--shadow-lg);
+    }
+
+    .stat-item:hover::before {
+        opacity: 0.1;
+    }
+
+    .stat-icon {
+        font-size: 2rem;
+        background: var(--gradient-success);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        margin-bottom: 0.5rem;
+    }
+
+    .stat-number {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: var(--text-primary);
+        margin-bottom: 0.25rem;
+    }
+
+    .stat-label {
+        color: var(--text-secondary);
+        font-size: 0.875rem;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <!-- Page Heading -->
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <div>
+            <h1 class="h3 mb-0" style="color: var(--text-primary); background: var(--gradient-success); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">Customers</h1>
+            <p class="text-muted mb-0">Manage your customer relationships</p>
+        </div>
+        <a href="{% url 'dashboard:customer_create' %}" class="btn btn-success shadow-sm">
+            <i class="fas fa-plus fa-sm me-2"></i> New Customer
+        </a>
+    </div>
+
+    <!-- Customer Stats -->
+    <div class="stats-grid">
+        <div class="stat-item">
+            <i class="fas fa-users stat-icon"></i>
+            <div class="stat-number">{{ customers.paginator.count|default:"0" }}</div>
+            <div class="stat-label">Total Customers</div>
+        </div>
+        <div class="stat-item">
+            <i class="fas fa-user-plus stat-icon"></i>
+            <div class="stat-number">12</div>
+            <div class="stat-label">New This Month</div>
+        </div>
+        <div class="stat-item">
+            <i class="fas fa-star stat-icon"></i>
+            <div class="stat-number">89%</div>
+            <div class="stat-label">Satisfaction Rate</div>
+        </div>
+        <div class="stat-item">
+            <i class="fas fa-shopping-bag stat-icon"></i>
+            <div class="stat-number">$45,230</div>
+            <div class="stat-label">Total Revenue</div>
+        </div>
+    </div>
+
+    <!-- Search and Filter -->
+    <div class="search-filters">
+        <h6 class="mb-3" style="color: var(--text-primary);">
+            <i class="fas fa-search me-2"></i>Search and Filter
+        </h6>
+        <form method="get" class="row g-3 align-items-center">
+            <div class="col-md-6 mb-3">
+                <div class="position-relative">
+                    <i class="fas fa-search position-absolute" style="left: 1rem; top: 50%; transform: translateY(-50%); color: var(--text-muted); z-index: 2;"></i>
+                    <input type="text" class="form-control" id="search" name="search" style="padding-left: 3rem;"
+                           placeholder="Search by name, email or phone..." value="{{ request.GET.search|default:'' }}">
+                </div>
+            </div>
+            <div class="col-md-4 mb-3">
+                <select class="form-control" id="sort" name="sort">
+                    <option value="name" {% if request.GET.sort == 'name' or not request.GET.sort %}selected{% endif %}>Name (A-Z)</option>
+                    <option value="-name" {% if request.GET.sort == '-name' %}selected{% endif %}>Name (Z-A)</option>
+                    <option value="-date_created" {% if request.GET.sort == '-date_created' %}selected{% endif %}>Newest First</option>
+                    <option value="date_created" {% if request.GET.sort == 'date_created' %}selected{% endif %}>Oldest First</option>
+                </select>
+            </div>
+            <div class="col-md-2 mb-3">
+                <button type="submit" class="btn btn-success w-100">
+                    <i class="fas fa-filter me-2"></i>Apply
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Customers Grid -->
+    <div class="row">
+        {% for customer in customers %}
+        <div class="col-lg-4 col-md-6 mb-4">
+            <div class="customer-card p-4 h-100">
+                <div class="customer-actions">
+                    <button class="quick-action-btn btn btn-info" onclick="location.href='{% url 'dashboard:customer_detail' customer.id %}'">
+                        <i class="fas fa-eye"></i>
+                    </button>
+                    <button class="quick-action-btn btn btn-warning" onclick="location.href='{% url 'dashboard:customer_update' customer.id %}'">
+                        <i class="fas fa-edit"></i>
+                    </button>
+                    <button class="quick-action-btn btn btn-danger" onclick="location.href='{% url 'dashboard:customer_delete' customer.id %}'">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </div>
+
+                <div class="customer-info text-center">
+                    <div class="customer-avatar">
+                        {{ customer.name|first|upper }}
+                    </div>
+                    <h5>
+                        <a href="{% url 'dashboard:customer_detail' customer.id %}" class="customer-name">
+                            {{ customer.name }}
+                        </a>
+                    </h5>
+                    <div class="customer-email">
+                        <i class="fas fa-envelope me-2"></i>{{ customer.email }}
+                    </div>
+                    <div class="customer-phone">
+                        <i class="fas fa-phone me-2"></i>{{ customer.phone }}
+                    </div>
+
+                    <div class="customer-stats">
+                        <div class="customer-stat">
+                            <div class="customer-stat-value">{{ customer.order_set.count }}</div>
+                            <div class="customer-stat-label">Orders</div>
+                        </div>
+                        <div class="customer-stat">
+                            <div class="customer-stat-value">${{ customer.total_spent|default:"0"|floatformat:0 }}</div>
+                            <div class="customer-stat-label">Spent</div>
+                        </div>
+                        <div class="customer-stat">
+                            <div class="customer-stat-value">{{ customer.date_created|timesince|truncatewords:1 }}</div>
+                            <div class="customer-stat-label">Member</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <div class="col-12">
+            <div class="text-center py-5">
+                <i class="fas fa-users fa-4x mb-3" style="color: var(--text-muted);"></i>
+                <h4 style="color: var(--text-primary);">No customers found</h4>
+                <p style="color: var(--text-secondary);">Try adjusting your search or filter to find what you're looking for</p>
+                <a href="{% url 'dashboard:customer_create' %}" class="btn btn-success">
+                    <i class="fas fa-plus me-2"></i>Add Your First Customer
+                </a>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- Pagination -->
+    {% if customers.has_other_pages %}
+    <nav aria-label="Page navigation" class="mt-4">
+        <ul class="pagination justify-content-center">
+            {% if customers.has_previous %}
+            <li class="page-item">
+                <a class="page-link" href="?page=1{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.sort %}&sort={{ request.GET.sort }}{% endif %}" aria-label="First">
+                    <span aria-hidden="true">&laquo;&laquo;</span>
+                </a>
+            </li>
+            <li class="page-item">
+                <a class="page-link" href="?page={{ customers.previous_page_number }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.sort %}&sort={{ request.GET.sort }}{% endif %}" aria-label="Previous">
+                    <span aria-hidden="true">&laquo;</span>
+                </a>
+            </li>
+            {% endif %}
+
+            {% for i in customers.paginator.page_range %}
+                {% if customers.number == i %}
+                <li class="page-item active"><span class="page-link">{{ i }}</span></li>
+                {% elif i > customers.number|add:'-3' and i < customers.number|add:'3' %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ i }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.sort %}&sort={{ request.GET.sort }}{% endif %}">{{ i }}</a>
+                </li>
+                {% endif %}
+            {% endfor %}
+
+            {% if customers.has_next %}
+            <li class="page-item">
+                <a class="page-link" href="?page={{ customers.next_page_number }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.sort %}&sort={{ request.GET.sort }}{% endif %}" aria-label="Next">
+                    <span aria-hidden="true">&raquo;</span>
+                </a>
+            </li>
+            <li class="page-item">
+                <a class="page-link" href="?page={{ customers.paginator.num_pages }}{% if request.GET.search %}&search={{ request.GET.search }}{% endif %}{% if request.GET.sort %}&sort={{ request.GET.sort }}{% endif %}" aria-label="Last">
+                    <span aria-hidden="true">&raquo;&raquo;</span>
+                </a>
+            </li>
+            {% endif %}
+        </ul>
+    </nav>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Customer card animations
+    const customerCards = document.querySelectorAll('.customer-card');
+    customerCards.forEach((card, index) => {
+        card.style.animationDelay = `${index * 0.1}s`;
+        card.style.animation = 'fadeInUp 0.6s ease forwards';
+    });
+
+    // Stat items animation
+    const statItems = document.querySelectorAll('.stat-item');
+    statItems.forEach((item, index) => {
+        item.style.animationDelay = `${index * 0.2}s`;
+        item.style.animation = 'fadeInUp 0.6s ease forwards';
+    });
+
+    // Search input focus effect
+    const searchInput = document.getElementById('search');
+    searchInput.addEventListener('focus', function() {
+        this.parentElement.style.transform = 'scale(1.02)';
+        this.parentElement.style.transition = 'transform 0.3s ease';
+    });
+
+    searchInput.addEventListener('blur', function() {
+        this.parentElement.style.transform = 'scale(1)';
+    });
+</script>
+{% endblock %}
